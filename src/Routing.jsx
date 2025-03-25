@@ -14,10 +14,13 @@ import Orders from './Pages/Vender/Orders';
 function Routing() {
   const location = useLocation();
 
-  // Define paths where Header and Footer should not be displayed
-  const hideHeaderFooterPaths = ['/', '/register','/adminpanel','/cart'];
+  // Define paths where Header and Footer should NOT be displayed
+  const hideHeaderFooterPaths = ['/login', '/register', '/adminpanel', '/cart'];
 
-  const shouldHideHeaderFooter = hideHeaderFooterPaths.includes(location.pathname);
+  // Check if any of these paths exist in the current URL
+  const shouldHideHeaderFooter = hideHeaderFooterPaths.some(path =>
+    location.pathname.startsWith(path)
+  );
 
   return (
     <>
@@ -29,9 +32,8 @@ function Routing() {
         <Route path='/cart' element={<Cart />} />
         <Route path='/login' element={<LoginPage />} />
         <Route path='/register' element={<SignInPage />} />
-        <Route path='/adminpanel' element={<Adminpanel />} />
+        <Route path='/adminpanel/*' element={<Adminpanel />} />
         <Route path='/orders' element={<Orders />} />
-
       </Routes>
       {!shouldHideHeaderFooter && <Footer />}
     </>
