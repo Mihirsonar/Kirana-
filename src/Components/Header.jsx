@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import LoginPage from '../Pages/Login';
 import { useSelector } from 'react-redux';
 import { LiaCartPlusSolid } from "react-icons/lia";
 import { PiShoppingCartThin } from "react-icons/pi";
-import { BsShop } from "react-icons/bs";
 import SearchBar from './Search';
 import { IoPersonCircleOutline } from "react-icons/io5";
-// import ShinyText from './Button';
 import GradientText from './Button';
 
 function Header() {
@@ -25,21 +24,21 @@ function Header() {
     if (user) setUserName(user);
   }, []);
 
-  const cartItems = useSelector((state) => state.Cart.cartItems || []);
+  const cartItems = useSelector((state) => state.cart.cartItems || []);
   const cartCount = cartItems.length;
 
   const navLinks = [
-    { name: 'Home', path: '/home' },
+    { name: 'Home', path: '/' },
     { name: 'Cart', path: '/cart' },
     { name: 'Products', path: '/products' },
     { name: 'About', path: '/about' },
   ];
 
   return (
-    <div className="flex sticky mx-5 top-0 z-50 p-3 px-8 bg-[#102E4A] text-white rounded-xl mt-1 mb-2">
+    <div className="flex sticky mx-5 top-0 z-50 p-3 px-8 bg-white text-black rounded-xl mt-1 mb-2">
       {/* Left Section */}
       <div className="flex items-center gap-6 w-full">
-        <Link to="/home" className="flex items-center text-2xl font-bold ">
+        <Link to="/" className="flex items-center text-2xl font-bold ">
           Kirana <LiaCartPlusSolid className="ml-1 mt-1 w-6 h-6 " />
         </Link>
         <SearchBar />
@@ -47,15 +46,11 @@ function Header() {
 
       {/* Right Section */}
       <div className=" lg:flex  sm:hidden items-center gap-6">
-        {/* User Name and Dropdown */}
         {isLoggedIn ? (
           <div className="relative group">
-            <button className="flex items-center justify-center mx-3 p-2 font-semibold text-white rounded-lg gap-1">
+            <button className="flex items-center justify-center mx-3 p-2 font-semibold text-black rounded-lg gap-1">
             <IoPersonCircleOutline className="ml-1 w-6 h-6" />
               {userName.split(" ")[0]}
-
-              {/* <ShinyText text= {userName.split(" ")[0]} disabled={false} speed={2} className='custom-class  p-2 px-2 rounded-full' /> */}
-
               
             </button>
             <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-300 rounded-lg shadow-lg hidden group-hover:flex flex-col">
@@ -65,7 +60,7 @@ function Header() {
               >
                 Profile
               </Link>
-              <Link to="/">
+              <Link to="/login">
               <button
                 onClick={() => {
                   localStorage.removeItem("Token");
@@ -81,7 +76,7 @@ function Header() {
             </div>
           </div>
         ) : (
-          <Link to="/">
+          <Link to="/login">
             <button className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
               Login
             </button>
@@ -103,13 +98,9 @@ function Header() {
         {/* Become Seller Button */}
         <div className="flex flex-grow-10 items-center cursor-pointer text-sm font-semibold py-2 w-36 ">
           {/* <BsShop className="w-9 h-6 mr-2" /> */}
-          <GradientText
-          colors={["#32292F", "#4079ff", "#32292F", "#4079ff", "#32292F"]}
-          animationSpeed={2}
-          showBorder={true}
-          className="custom-class p-2"
-          >
-Become Seller</GradientText>
+          <button className="px-4 py-3 bg-green-500 text-white rounded-lg hover:bg-blue-600">
+              Become Seller
+            </button>
           {/* <ShinyText text="Become Seller" disabled={false} speed={2} className='custom-class border border-black p-2 px-2 rounded-xl' /> */}
           </div>
       </div>
@@ -123,7 +114,7 @@ Become Seller</GradientText>
 
       {/* Mobile Menu */}
       <div
-        className={`fixed top-20 left-0 w-full text-white flex flex-col gap-4 p-6 text-lg font-bold transform transition-transform duration-300 ease-in-out rounded-xl bg-[#102E4A] ${
+        className={`fixed top-20 left-0 w-full text-black flex flex-col gap-4 p-6 text-lg font-bold transform transition-transform duration-300 ease-in-out rounded-xl bg-white ${
           MobileView ? 'translate-x-0' : '-translate-x-full'
         }`}
       >

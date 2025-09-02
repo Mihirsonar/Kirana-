@@ -8,8 +8,8 @@ const CartHeader = ({ currentStep }) => {
   return (
     <div className="w-full bg-white shadow-md py-3 px-8 md:px-12 flex items-center justify-between">
       {/* Left: Local+ Icon */}
-      <Link to="/home" className="flex items-center text-2xl font-bold">
-          Local <LiaCartPlusSolid className="ml-1 w-6 h-6" />
+      <Link to="/" className="flex items-center text-2xl font-bold">
+          Kirana <LiaCartPlusSolid className="ml-1 w-6 h-6" />
       </Link>
 
       {/* Center: Steps */}

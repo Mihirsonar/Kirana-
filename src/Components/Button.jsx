@@ -13,7 +13,7 @@ export default function GradientText({
   
     return (
       <div
-        className={`relative mx-auto flex max-w-fit flex-row items-center justify-center rounded-[1.25rem] font-semibold backdrop-blur transition-shadow duration-500 overflow-hidden cursor-pointer ${className}`}
+        className={`relative mx-auto flex max-w-fit flex-row items-center justify-center rounded-[1.1rem] font-semibold backdrop-blur transition-shadow duration-500 overflow-hidden cursor-pointer ${className}`}
       >
         {showBorder && (
           <div
@@ -24,7 +24,7 @@ export default function GradientText({
             }}
           >
             <div
-              className="absolute inset-0 bg-[#D0E3C4] rounded-[1.25rem] z-[-1]"
+              className="absolute inset-0 bg-[#aeaadf] rounded-[1rem] z-[-1]"
               style={{
                 width: "calc(100% - 2px)",
                 height: "calc(100% - 2px)",

@@ -5,7 +5,7 @@ import CartHeader from '../Components/CartHeader';
 import { incrementQuantity, decrementQuantity } from '../redux/Slice/CartSlice';
 
 function Cart() {
-  const cartItems = useSelector(state => state.Cart.cartItems || []);
+  const cartItems = useSelector(state => state.cart.cartItems || []);
   const dispatch = useDispatch();
 
   const handleIncrement = (id) => {
@@ -64,14 +64,16 @@ function Cart() {
                 ₹{cartItems.reduce((total, item) => total + item.price * item.quantity, 0)}
               </span>
             </div>
+            <Link to={"/address"}>
             <button className="w-full bg-blue-500 text-white py-2 mt-6 rounded-lg font-medium hover:bg-blue-600">
               Proceed to Checkout
             </button>
+            </Link>
           </div>
         ) : (
           <div className="text-center font-semibold  py-[20%]">
             <p className="text-xl">Your cart is empty</p>
-            <Link to={"/home"}>
+            <Link to={"/"}>
               <button className="mt-4 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600">
                 Continue Shopping
               </button>

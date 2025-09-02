@@ -10,14 +10,14 @@ import LoginPage from './Pages/Login';
 import SignInPage from './Pages/Register';
 import Adminpanel from './Pages/Vender/Vender.Adminpanel';
 import Orders from './Pages/Vender/Orders';
+import AddressPage from './Pages/Address';
+import PaymentPage from './Pages/Payment';
 
 function Routing() {
   const location = useLocation();
 
-  // Define paths where Header and Footer should NOT be displayed
-  const hideHeaderFooterPaths = ['/login', '/register', '/adminpanel', '/cart'];
+  const hideHeaderFooterPaths = ['/login', '/register', '/adminpanel', '/cart', '/orders', '/address','/payment'];
 
-  // Check if any of these paths exist in the current URL
   const shouldHideHeaderFooter = hideHeaderFooterPaths.some(path =>
     location.pathname.startsWith(path)
   );
@@ -34,6 +34,10 @@ function Routing() {
         <Route path='/register' element={<SignInPage />} />
         <Route path='/adminpanel/*' element={<Adminpanel />} />
         <Route path='/orders' element={<Orders />} />
+        <Route path='/address' element={<AddressPage />} />
+        <Route path='/payment' element={<PaymentPage />} />
+
+
       </Routes>
       {!shouldHideHeaderFooter && <Footer />}
     </>

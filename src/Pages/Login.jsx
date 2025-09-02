@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { BackgroundLines } from "../Components/Bg"; // Import BackgroundLines component
+import { BackgroundLines } from "../Components/Bg"; 
+import { Link } from "react-router-dom";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -34,7 +35,7 @@ const LoginPage = () => {
       localStorage.setItem("Role", JSON.stringify(data.user.role));
 
       console.log(data);
-      navigate("/Adminpanel");
+      navigate("/");
     } catch (err) {
       console.error("Login error:", err.message);
       setError(err.message);
@@ -54,8 +55,8 @@ const LoginPage = () => {
             </label>
             <input
               type="email"
+              placeholder="john@example.com"
               id="email"
-              value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
               className="w-full px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500"
@@ -69,6 +70,7 @@ const LoginPage = () => {
               type="password"
               id="password"
               value={password}
+              placeholder="123456"
               onChange={(e) => setPassword(e.target.value)}
               required
               className="w-full px-4 py-2 border rounded-lg"
@@ -83,9 +85,12 @@ const LoginPage = () => {
             {loading ? "Logging in..." : "Login"}
           </button>
         </form>
+        <Link to="/register">
+
         <p className="mt-4 text-sm text-center text-gray-600">
           Don't have an account? <a href="#" className="text-blue-500 hover:underline">Sign up</a>
         </p>
+        </Link>
       </div>
     </BackgroundLines>
   );
