@@ -9,6 +9,10 @@
   <body>
     <div id="root">
     </div>
-    <script type="module" src="/src/main.jsx"></script>
+    <script type="module" src="/src/main.jsx">
+        if (localStorage.getItem("theme") === "dark") {
+    document.documentElement.classList.add("dark");
+  }
+    </script>
   </body>
 </html>

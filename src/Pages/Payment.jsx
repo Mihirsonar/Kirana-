@@ -4,142 +4,172 @@ import { ToastContainer, toast } from "react-toastify";
 import { useDispatch, useSelector } from "react-redux";
 import { clearCart } from "../redux/Slice/CartSlice";
 import CartHeader from "../Components/CartHeader";
-import "react-toastify/dist/ReactToastify.css";
 
 const PaymentPage = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  // ✅ Cart from Redux
-  const cartItems = useSelector((state) => state.cart.cartItems);
+  const cartItems = useSelector((state) => state.cart.cartItems || []);
 
-  const [paymentMethod, setPaymentMethod] = useState("Credit Card");
+  const [paymentMethod, setPaymentMethod] = useState("UPI");
   const [selectedAddress, setSelectedAddress] = useState(null);
 
-  // ✅ Load saved address from localStorage
   useEffect(() => {
-    const savedAddress = localStorage.getItem("selectedAddress");
-    if (savedAddress) {
-      setSelectedAddress(JSON.parse(savedAddress));
-    }
+    const saved = localStorage.getItem("selectedAddress");
+    if (saved) setSelectedAddress(JSON.parse(saved));
   }, []);
 
-  // ✅ Calculate totals
   const subtotal = cartItems.reduce(
     (acc, item) => acc + item.price * item.quantity,
     0
   );
-  const shipping = cartItems.length > 0 ? 5 : 0;
-  const total = subtotal + shipping;
+  const delivery = cartItems.length ? 20 : 0;
+  const total = subtotal + delivery;
 
-  // ✅ Handle payment
   const handlePayment = () => {
-    if (!selectedAddress) {
-      toast.error("Please select a delivery address 🚚");
-      return;
-    }
-
-    if (cartItems.length === 0) {
-      toast.error("Your cart is empty 🛒");
-      return;
-    }
+    if (!selectedAddress) return toast.error("Select address first 🚚");
+    if (!cartItems.length) return toast.error("Cart is empty 🛒");
 
     dispatch(clearCart());
-    toast.success("Payment Successful 🎉");
+    toast.success("Order placed 🎉");
 
-    setTimeout(() => {
-      navigate("/");
-    }, 2000);
+    setTimeout(() => navigate("/"), 1500);
   };
 
   return (
-    <>
-      <ToastContainer position="bottom-left" autoClose={1000} />
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+           <ToastContainer
+              position="bottom-right"
+              autoClose={1000}
+              toastStyle={{ width: "260px", borderRadius: "10px" }}
+            />
       <CartHeader currentStep="Payment" />
 
-      <div className="p-6 max-w-3xl my-12 mx-auto bg-gray-100 rounded-md shadow-md">
-        <h2 className="text-2xl font-semibold mb-4">Payment</h2>
+      {/* MAIN CONTAINER */}
+      <div className="max-w-7xl mx-auto px-4 py-6">
 
-        {/* ✅ Selected Address */}
-        {selectedAddress ? (
-          <div className="mb-4 p-3 border rounded-md bg-white">
-            <h3 className="text-lg font-medium mb-2">Delivery Address</h3>
-            <p>
-              <strong>{selectedAddress.label}:</strong>{" "}
-              {selectedAddress.street}, {selectedAddress.city}{" "}
-              {selectedAddress.zip}
-            </p>
-          </div>
-        ) : (
-          <p className="text-red-500 mb-4">
-            ⚠️ No address selected. Please go back and choose one.
-          </p>
-        )}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-        {/* ✅ Cart Items */}
-        <div className="mb-4 p-4 border rounded-md bg-white">
-          <h3 className="text-lg font-medium mb-3">Your Items</h3>
-          {cartItems.length === 0 ? (
-            <p className="text-gray-600">Your cart is empty 🛒</p>
-          ) : (
-            cartItems.map((item) => (
-              <div
-                key={item._id}
-                className="flex items-center justify-between border-b py-2"
-              >
-                <div className="flex items-center gap-3">
-                  <img
-                    src={item.image}
-                    alt={item.name}
-                    className="w-16 h-16 object-cover rounded"
-                  />
-                  <div>
-                    <p className="font-medium">{item.name}</p>
-                    <p className="text-sm text-gray-600">
-                      {item.quantity} × ₹{item.price.toFixed(2)}
+          {/* LEFT CONTENT */}
+          <div className="lg:col-span-2 flex flex-col gap-6">
+
+            {/* ADDRESS */}
+            <div className="bg-white dark:bg-gray-900 border dark:border-gray-800 rounded-xl p-5">
+              <h3 className="font-semibold mb-2 dark:text-white">
+                Delivery Address
+              </h3>
+
+              {selectedAddress ? (
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  {selectedAddress.street}, {selectedAddress.city} -{" "}
+                  {selectedAddress.zip}
+                </p>
+              ) : (
+                <p className="text-red-500 text-sm">
+                  No address selected
+                </p>
+              )}
+            </div>
+
+            {/* PAYMENT METHOD */}
+            <div className="bg-white dark:bg-gray-900 border dark:border-gray-800 rounded-xl p-5">
+              <h3 className="font-semibold mb-3 dark:text-white">
+                Payment Method
+              </h3>
+
+              <div className="grid gap-3">
+                {["UPI", "Card", "Cash on Delivery"].map((method) => (
+                  <div
+                    key={method}
+                    onClick={() => setPaymentMethod(method)}
+                    className={`p-4 rounded-lg border cursor-pointer transition ${
+                      paymentMethod === method
+                        ? "border-green-500 bg-green-50 dark:bg-green-900/20"
+                        : "border-gray-200 dark:border-gray-700"
+                    }`}
+                  >
+                    <p className="font-medium dark:text-white">
+                      {method}
                     </p>
                   </div>
-                </div>
-                <p className="font-semibold">
-                  ₹{(item.price * item.quantity).toFixed(2)}
-                </p>
+                ))}
               </div>
-            ))
-          )}
-        </div>
+            </div>
 
-        {/* ✅ Payment Method */}
-        <div className="mb-4">
-          <h3 className="text-lg font-medium mb-2">Payment Method</h3>
-          <select
-            className="w-full p-2 border rounded-md"
-            value={paymentMethod}
-            onChange={(e) => setPaymentMethod(e.target.value)}
-          >
-            <option value="Credit Card">Credit Card</option>
-            <option value="UPI">UPI</option>
-            <option value="PayPal">PayPal</option>
-          </select>
-        </div>
+            {/* ITEMS */}
+            <div className="bg-white dark:bg-gray-900 border dark:border-gray-800 rounded-xl p-5">
+              <h3 className="font-semibold mb-3 dark:text-white">
+                Order Items
+              </h3>
 
-        {/* ✅ Order Summary */}
-        <div className="mb-4 p-4 border rounded-md bg-white">
-          <h3 className="text-lg font-medium mb-2">Order Summary</h3>
-          <p>Subtotal: ₹{subtotal.toFixed(2)}</p>
-          <p>Shipping: ₹{shipping.toFixed(2)}</p>
-          <p className="font-semibold">Total: ₹{total.toFixed(2)}</p>
-        </div>
+              <div className="flex flex-col gap-3">
+                {cartItems.map((item) => (
+                  <div
+                    key={item._id}
+                    className="flex justify-between items-center text-sm"
+                  >
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={item.image}
+                        className="w-12 h-12 object-contain"
+                        alt=""
+                      />
+                      <span className="dark:text-white">
+                        {item.quantity} × {item.name}
+                      </span>
+                    </div>
 
-        {/* ✅ Pay Now Button */}
-        <button
-          className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 disabled:opacity-50"
-          onClick={handlePayment}
-          disabled={cartItems.length === 0}
-        >
-          Pay Now
-        </button>
+                    <span className="font-medium dark:text-white">
+                      ₹{item.price * item.quantity}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* RIGHT SUMMARY */}
+          <div className="lg:sticky lg:top-24 h-fit">
+            <div className="bg-white dark:bg-gray-900 border dark:border-gray-800 rounded-xl p-5">
+
+              <h3 className="font-semibold mb-4 dark:text-white">
+                Order Summary
+              </h3>
+
+              <div className="flex justify-between text-sm mb-2">
+                <span className="text-gray-600 dark:text-gray-400">
+                  Subtotal
+                </span>
+                <span className="dark:text-white">₹{subtotal}</span>
+              </div>
+
+              <div className="flex justify-between text-sm mb-2">
+                <span className="text-gray-600 dark:text-gray-400">
+                  Delivery
+                </span>
+                <span className="dark:text-white">₹{delivery}</span>
+              </div>
+
+              <div className="border-t my-3" />
+
+              <div className="flex justify-between font-bold text-lg">
+                <span className="dark:text-white">Total</span>
+                <span className="text-green-600">₹{total}</span>
+              </div>
+
+              {/* CTA */}
+              <button
+                onClick={handlePayment}
+                disabled={!cartItems.length}
+                className="w-full mt-5 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 disabled:opacity-50"
+              >
+                Place Order →
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
-    </>
+    </div>
   );
 };
 

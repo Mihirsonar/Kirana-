@@ -25,7 +25,7 @@ const initialState = {
 };
 
 const cartSlice = createSlice({
-  name: "cart", // 👈 lowercase
+  name: "cart", 
   initialState,
   reducers: {
     add: (state, action) => {

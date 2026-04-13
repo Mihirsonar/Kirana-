@@ -1,87 +1,126 @@
-import React from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { Link } from 'react-router-dom';
-import CartHeader from '../Components/CartHeader';
-import { incrementQuantity, decrementQuantity } from '../redux/Slice/CartSlice';
+import React from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { Link } from "react-router-dom";
+import CartHeader from "../Components/CartHeader";
+import {
+  incrementQuantity,
+  decrementQuantity,
+} from "../redux/Slice/CartSlice";
 
 function Cart() {
-  const cartItems = useSelector(state => state.cart.cartItems || []);
+  const cartItems = useSelector((state) => state.cart.cartItems || []);
   const dispatch = useDispatch();
 
-  const handleIncrement = (id) => {
-    dispatch(incrementQuantity(id));
-  };
-
-  const handleDecrement = (id) => {
-    dispatch(decrementQuantity(id));
-  };
+  const total = cartItems.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  );
 
   return (
-    <>
-      {cartItems.length > 0 && <CartHeader currentStep="Cart" />}
-      
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
 
-      <div className="min-h-screen p-5 bg-blue-100 flex flex-col items-center">
+      {cartItems.length > 0 && <CartHeader currentStep="Cart" />}
+
+      <div className="max-w-4xl mx-auto px-4 py-6">
 
         {cartItems.length > 0 ? (
-          <div className="w-full max-w-2xl bg-white rounded-lg shadow-md p-6">
-            {cartItems.map((item, index) => (
-              <div
-                key={index}
-                className="flex flex-col sm:flex-row items-center justify-between border-b border-gray-200 py-4"
-              >
-                <div className="flex items-center space-x-4 gap-20">
-                  <img
-                    src={item.image}
-                    alt={item.name}
-                    className="w-24 h-20 rounded-md object-contain"
-                  />
-                  <div className="flex flex-col justify-center">
-                    <h2 className="text-base font-bold">{item.description}</h2>
-                    <p className="text-gray-700">₹{item.price}</p>
+          <>
+            {/* CART ITEMS */}
+            <div className="flex flex-col gap-4">
+              {cartItems.map((item) => (
+                <div
+                  key={item._id}
+                  className="flex items-center justify-between bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 shadow-sm"
+                >
+                  {/* LEFT */}
+                  <div className="flex items-center gap-4">
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      className="w-16 h-16 object-contain rounded-lg bg-gray-100 dark:bg-gray-800 p-1"
+                    />
+
+                    <div>
+                      <h2 className="text-sm font-semibold text-gray-900 dark:text-white line-clamp-2">
+                        {item.description}
+                      </h2>
+                      <p className="text-sm text-gray-500 mt-1">
+                        ₹{item.price}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* RIGHT */}
+                  <div className="flex items-center gap-3">
+
+                    {/* QUANTITY STEPPER */}
+                    <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden">
+                      <button
+                        onClick={() => dispatch(decrementQuantity(item._id))}
+                        className="px-3 py-1 text-red-500 font-bold"
+                      >
+                        −
+                      </button>
+
+                      <span className="px-3 text-sm font-semibold text-gray-900 dark:text-white">
+                        {item.quantity}
+                      </span>
+
+                      <button
+                        onClick={() => dispatch(incrementQuantity(item._id))}
+                        className="px-3 py-1 text-green-500 font-bold"
+                      >
+                        +
+                      </button>
+                    </div>
                   </div>
                 </div>
-                <div className="mt-2 sm:mt-0 flex items-center space-x-4">
-                  <button
-                    onClick={() => handleDecrement(item._id)}
-                    className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
-                  >
-                    -
-                  </button>
-                  <span className="font-medium">{item.quantity}</span>
-                  <button
-                    onClick={() => handleIncrement(item._id)}
-                    className="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600"
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-            ))}
-            <div className="flex justify-between items-center mt-6">
-              <span className="text-xl font-bold">Total:</span>
-              <span className="text-xl font-bold text-green-600">
-                ₹{cartItems.reduce((total, item) => total + item.price * item.quantity, 0)}
-              </span>
+              ))}
             </div>
-            <Link to={"/address"}>
-            <button className="w-full bg-blue-500 text-white py-2 mt-6 rounded-lg font-medium hover:bg-blue-600">
-              Proceed to Checkout
-            </button>
-            </Link>
-          </div>
+
+            {/* SPACING FOR STICKY BAR */}
+            <div className="h-24" />
+          </>
         ) : (
-          <div className="text-center font-semibold  py-[20%]">
-            <p className="text-xl">Your cart is empty</p>
-            <Link to={"/"}>
-              <button className="mt-4 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600">
-                Continue Shopping
+          /* EMPTY STATE */
+          <div className="flex flex-col items-center justify-center py-24 text-center">
+            <h2 className="text-xl font-semibold text-gray-800 dark:text-white">
+              Your cart is empty 🛒
+            </h2>
+            <p className="text-gray-500 mt-2">
+              Looks like you haven’t added anything yet
+            </p>
+
+            <Link to="/">
+              <button className="mt-6 px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+                Start Shopping
               </button>
             </Link>
           </div>
         )}
       </div>
-    </>
+
+      {/* 🔥 STICKY CHECKOUT BAR */}
+      {cartItems.length > 0 && (
+        <div className="fixed bottom-0 left-0 w-full bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 px-4 py-3">
+          <div className="max-w-4xl mx-auto flex items-center justify-between">
+
+            <div>
+              <p className="text-sm text-gray-500">Total</p>
+              <p className="text-lg font-bold text-gray-900 dark:text-white">
+                ₹{total}
+              </p>
+            </div>
+
+            <Link to="/address">
+              <button className="px-6 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition">
+                Checkout →
+              </button>
+            </Link>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
