@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BackgroundLines } from '../Components/Bg';
+import { Link } from 'react-router-dom';
 
 const SignInPage = () => {
   const [email, setEmail] = useState('');
@@ -89,9 +90,9 @@ const SignInPage = () => {
 
         <div className="mt-4 text-center">
           <span className="text-sm text-gray-500">Have an account?</span>
-          <a href="/login" className="text-sm text-blue-500 hover:underline ml-2">
+          <Link to="/login" className="text-sm text-blue-500 hover:underline ml-2">
             Login
-          </a>
+          </Link>
         </div>
       </div>
     </BackgroundLines>
