@@ -6,9 +6,9 @@ import { useEffect } from "react";
 function App() {
   const darkMode = useSelector((state) => state.theme.darkmode);
 
-  useEffect(() => {
-    document.documentElement.classList.toggle("dark", darkMode);
-  }, [darkMode]);
+useEffect(() => {
+  document.documentElement.classList.toggle("dark", darkMode);
+}, [darkMode]);
 
   return (
     <BrowserRouter>

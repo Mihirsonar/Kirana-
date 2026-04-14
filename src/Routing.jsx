@@ -12,6 +12,7 @@ import Adminpanel from './Pages/Vender/Vender.Adminpanel';
 import Orders from './Pages/Vender/Orders';
 import AddressPage from './Pages/Address';
 import PaymentPage from './Pages/Payment';
+import ProtectedRoute from './Components/ProtectedRoute';
 
 function Routing() {
   const location = useLocation();
@@ -29,14 +30,42 @@ function Routing() {
         <Route path='/' element={<Home />} />
         <Route path='/about' element={<About />} />
         <Route path='/contact' element={<Contact />} />
-        <Route path='/cart' element={<Cart />} />
         <Route path='/login' element={<LoginPage />} />
         <Route path='/register' element={<SignInPage />} />
         <Route path='/adminpanel/*' element={<Adminpanel />} />
-        <Route path='/orders' element={<Orders />} />
-        <Route path='/address' element={<AddressPage />} />
-        <Route path='/payment' element={<PaymentPage />} />
+        <Route
+          path='/cart'
+          element={
+            <ProtectedRoute>
+              <Cart />
+            </ProtectedRoute>
+          }
+        />
+         <Route
+          path='/orders'
+          element={
+            <ProtectedRoute>
+              <Orders />
+            </ProtectedRoute>
+          }
+        />
+         <Route
+          path='/address'
+          element={
+            <ProtectedRoute>
+              <AddressPage />
+            </ProtectedRoute>
+          }
+        />  
 
+                 <Route
+          path='/payment'
+          element={
+            <ProtectedRoute>
+              <PaymentPage />
+            </ProtectedRoute>
+          }
+        /> 
 
       </Routes>
       {!shouldHideHeaderFooter && <Footer />}

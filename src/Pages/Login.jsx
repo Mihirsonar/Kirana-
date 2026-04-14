@@ -1,13 +1,13 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { BackgroundLines } from "../Components/Bg"; 
-import { Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import { BackgroundLines } from "../Components/Bg";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
@@ -16,28 +16,28 @@ const LoginPage = () => {
     setError("");
 
     try {
-      const response = await fetch("https://local-swart.vercel.app/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
+      const response = await fetch(
+        "https://local-swart.vercel.app/api/auth/login",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        }
+      );
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Login failed");
+        const err = await response.json();
+        throw new Error(err.message || "Login failed");
       }
 
       const data = await response.json();
+
       localStorage.setItem("User", JSON.stringify(data.user.name));
       localStorage.setItem("Token", JSON.stringify(data.token));
       localStorage.setItem("Role", JSON.stringify(data.user.role));
 
-      console.log(data);
       navigate("/");
     } catch (err) {
-      console.error("Login error:", err.message);
       setError(err.message);
     } finally {
       setLoading(false);
@@ -45,52 +45,65 @@ const LoginPage = () => {
   };
 
   return (
-    <BackgroundLines  className="flex items-center justify-center min-h-screen" svgOptions={{ stroke: "#ddd" }}>
-      <div className="w-full max-w-md p-8 bg-black rounded-lg shadow-md relative z-10">
-        <h2 className="text-3xl font-bold text-center text-gray-400 mb-6">Login</h2>
-        <form onSubmit={handleLogin}>
-          <div className="mb-4">
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-              Email Address
-            </label>
+    <BackgroundLines className="min-h-screen flex items-center justify-center px-4">
+
+      <div className="w-full max-w-md z-10 relative">
+
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-lg p-6">
+
+          <h2 className="text-2xl font-bold text-center text-gray-900 dark:text-white mb-1">
+            Welcome Back
+          </h2>
+
+          <p className="text-sm text-gray-500 text-center mb-6">
+            Login to continue
+          </p>
+
+          <form onSubmit={handleLogin} className="space-y-4">
+
             <input
               type="email"
               placeholder="john@example.com"
-              id="email"
+              value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500"
+              className="w-full p-3 rounded-lg border border-gray-200 bg-white text-gray-900 dark:bg-gray-800 dark:text-white dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500"
             />
-          </div>
-          <div className="mb-4">
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-              Password
-            </label>
+
             <input
               type="password"
-              id="password"
-              value={password}
               placeholder="123456"
+              value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full px-4 py-2 border rounded-lg"
+              className="w-full p-3 rounded-lg border border-gray-200 bg-white text-gray-900 dark:bg-gray-800 dark:text-white dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500"
             />
-          </div>
-          {error && <p className="text-sm text-red-500 mb-4">{error}</p>}
-          <button
-            type="submit"
-            disabled={loading}
-            className={`w-full px-4 py-2 text-white bg-blue-500 rounded-lg ${loading ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-600"} focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75`}
-          >
-            {loading ? "Logging in..." : "Login"}
-          </button>
-        </form>
-        <Link to="/register">
 
-        <p className="mt-4 text-sm text-center text-gray-600">
-          Don't have an account? <a href="#" className="text-blue-500 hover:underline">Sign up</a>
-        </p>
-        </Link>
+            {error && (
+              <p className="text-sm text-red-500">{error}</p>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition disabled:opacity-50"
+            >
+              {loading ? "Logging in..." : "Login"}
+            </button>
+          </form>
+
+          <div className="mt-6 text-center">
+            <span className="text-sm text-gray-500">
+              Don’t have an account?
+            </span>
+            <Link
+              to="/register"
+              className="ml-2 text-sm text-green-600 hover:underline"
+            >
+              Sign up
+            </Link>
+          </div>
+        </div>
       </div>
     </BackgroundLines>
   );

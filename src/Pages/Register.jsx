@@ -1,98 +1,103 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { BackgroundLines } from '../Components/Bg';
-import { Link } from 'react-router-dom';
+import React, { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { BackgroundLines } from "../Components/Bg";
 
 const SignInPage = () => {
-  const [email, setEmail] = useState('');
-  const [name, setName] = useState('');
-  const [password, setPassword] = useState('');
-  const [isSigningUp, setIsSigningUp] = useState(false);
+  const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+
   const navigate = useNavigate();
 
   const handleSignIn = async (e) => {
     e.preventDefault();
-    setIsSigningUp(true);
+    setLoading(true);
 
     try {
-      const response = await fetch('https://local-swart.vercel.app/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name,
-          email,
-          password,
-        }),
-      });
+      const response = await fetch(
+        "https://local-swart.vercel.app/api/auth/register",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ name, email, password }),
+        }
+      );
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      if (!response.ok) throw new Error();
 
-      navigate('/'); 
-
+      navigate("/");
     } catch (error) {
-      console.error('Registration Error:', error);
-      setIsSigningUp(false);
+      setLoading(false);
     }
   };
 
   return (
-    <BackgroundLines className="flex items-center justify-center min-h-screen p-4" svgOptions={{ stroke: "#ddd" }}>
-      <div className="w-full max-w-md p-6 bg-black rounded-lg shadow-md relative z-10">
-        <h2 className="text-2xl font-bold text-gray-200 mb-4 text-center">Sign Up</h2>
-        <form onSubmit={handleSignIn} className="space-y-4">
-          <div className="mb-2">
-            <label htmlFor="name" className="block text-sm font-medium text-gray-200 mb-1">
-              Name
-            </label>
+    <BackgroundLines className="min-h-screen flex items-center justify-center px-4">
+
+      <div className="w-full max-w-md z-10 relative">
+
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-lg p-6">
+
+          <h2 className="text-2xl font-bold text-center text-gray-900 dark:text-white mb-1">
+            Create Account
+          </h2>
+
+          <p className="text-sm text-gray-500 text-center mb-6">
+            Sign up to continue
+          </p>
+
+          <form onSubmit={handleSignIn} className="space-y-4">
+
             <input
               type="text"
-              placeholder="Enter your Name"
-              id="name"
+              placeholder="Full Name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-              className="w-full px-3 py-2 border rounded-lg bg-gray-200 text-black"
+              className="w-full p-3 rounded-lg border border-gray-200 bg-white text-gray-900 dark:bg-gray-800 dark:text-white dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500"
             />
-          </div>
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-200 mb-1">Email Address</label>
+
             <input
               type="email"
-              id="email"
+              placeholder="Email Address"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-3 py-2 border rounded-lg bg-gray-200 text-black"
-              placeholder="Enter your email"
+              className="w-full p-3 rounded-lg border border-gray-200 bg-white text-gray-900 dark:bg-gray-800 dark:text-white dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500"
             />
-          </div>
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-200 mb-1">Password</label>
+
             <input
               type="password"
-              id="password"
+              placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full px-3 py-2 border rounded-lg bg-gray-200 text-black"
-              placeholder="Enter your password"
+              className="w-full p-3 rounded-lg border border-gray-200 bg-white text-gray-900 dark:bg-gray-800 dark:text-white dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500"
             />
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition disabled:opacity-50"
+            >
+              {loading ? "Creating..." : "Create Account"}
+            </button>
+          </form>
+
+          <div className="mt-6 text-center">
+            <span className="text-sm text-gray-500">
+              Already have an account?
+            </span>
+            <Link
+              to="/login"
+              className="ml-2 text-sm text-green-600 hover:underline"
+            >
+              Login
+            </Link>
           </div>
-
-          <button className="w-full px-4 py-2 text-white bg-blue-500 rounded-lg" type="submit" disabled={isSigningUp}>
-            {isSigningUp ? 'Creating Account...' : 'Create an Account'}
-          </button>
-        </form>
-
-        <div className="mt-4 text-center">
-          <span className="text-sm text-gray-500">Have an account?</span>
-          <Link to="/login" className="text-sm text-blue-500 hover:underline ml-2">
-            Login
-          </Link>
         </div>
       </div>
     </BackgroundLines>
