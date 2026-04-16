@@ -19,9 +19,8 @@ function Header() {
   const cartCount = cartItems.length;
 
   useEffect(() => {
-    const token = JSON.parse(localStorage.getItem("Token"));
-    const user = JSON.parse(localStorage.getItem("User"));
-
+    const token = localStorage.getItem("Token");
+    const user = localStorage.getItem("User")?.name || "";
     setIsLoggedIn(!!token);
     if (user) setUserName(user);
   }, []);

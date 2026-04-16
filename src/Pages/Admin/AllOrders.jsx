@@ -6,7 +6,7 @@ const AllOrders = () => {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const token = JSON.parse(localStorage.getItem("Token"));
+    const token = localStorage.getItem("Token");
 
         const res = await fetch(
           "https://local-swart.vercel.app/api/orders/admin",
@@ -22,6 +22,7 @@ if (!res.ok) {
 }
         const data = await res.json();
         setOrders(data);
+        console.log("Fetched orders:", data);
       } catch (err) {
         console.error(err);
       }
@@ -31,7 +32,7 @@ if (!res.ok) {
   }, []);
 
   return (
-    <div className="p-6 bg-gray-50 dark:bg-gray-950 min-h-screen">
+    <div className="p-6 bg-gray-50 dark:bg-gray-950 min-h-screen dark:text-white">
       <h2 className="text-xl font-semibold mb-6 dark:text-white">
         All Orders
       </h2>
@@ -39,23 +40,23 @@ if (!res.ok) {
       {orders.length === 0 ? (
         <p className="text-gray-500">No orders found</p>
       ) : (
-        <div className="space-y-4">
-          {orders.map((order) => (
+        <div className="space-y-4 ">
+          {orders.orders.map((order) => (
             <div
               key={order._id}
               className="p-4 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
             >
-              <p className="text-xs text-gray-400 mb-1">
+              <p className="text-xs text-gray-400 mb-1 dark:text-gray-200">
                 Order ID: {order._id.slice(-6)}
               </p>
 
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-500 dark:text-gray-200">
                 {order.user?.name} ({order.user?.email})
               </p>
 
-              <p className="text-xs text-gray-400">
+              {/* <p className="text-xs text-gray-400 dark:text-gray-200">
                 {new Date(order.createdAt).toLocaleString()}
-              </p>
+              </p> */}
 
               <div className="mt-2 space-y-1 text-sm">
                 {order.items.map((item, i) => (

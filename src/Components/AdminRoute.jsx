@@ -3,8 +3,8 @@ import { Navigate, useLocation } from "react-router-dom";
 const AdminRoute = ({ children }) => {
   const location = useLocation();
 
-  const token = JSON.parse(localStorage.getItem("Token"));
-  const role = JSON.parse(localStorage.getItem("Role"));
+    const token = localStorage.getItem("Token");
+  const role = localStorage.getItem("Role");
 
   // Not logged in → go to login
   if (!token) {
