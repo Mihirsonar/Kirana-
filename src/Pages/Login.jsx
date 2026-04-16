@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { BackgroundLines } from "../Components/Bg";
+import { useLocation } from "react-router-dom";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -10,39 +11,50 @@ const LoginPage = () => {
 
   const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
+const location = useLocation();
 
-    try {
-      const response = await fetch(
-        "https://local-swart.vercel.app/api/auth/login",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password }),
-        }
-      );
+const handleLogin = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  setError("");
 
-      if (!response.ok) {
-        const err = await response.json();
-        throw new Error(err.message || "Login failed");
+  try {
+    const response = await fetch(
+      "https://local-swart.vercel.app/api/auth/login",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
       }
+    );
 
-      const data = await response.json();
-
-      localStorage.setItem("User", JSON.stringify(data.user.name));
-      localStorage.setItem("Token", JSON.stringify(data.token));
-      localStorage.setItem("Role", JSON.stringify(data.user.role));
-
-      navigate("/");
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(err.message || "Login failed");
     }
-  };
+
+    const data = await response.json();
+
+    localStorage.setItem("User", JSON.stringify(data.user.name));
+    localStorage.setItem("Token", JSON.stringify(data.token));
+    localStorage.setItem("Role", JSON.stringify(data.user.role));
+
+    const from = location.state?.from?.pathname;
+
+    if (from) {
+      navigate(from);
+    } else if (data.user.role === "admin") {
+      navigate("/admin/AllOrders");
+    } else {
+      navigate("/");
+    }
+
+  } catch (err) {
+    setError(err.message);
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <BackgroundLines className="min-h-screen flex items-center justify-center px-4">
