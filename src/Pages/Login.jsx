@@ -28,23 +28,24 @@ const handleLogin = async (e) => {
       }
     );
 
-    if (!response.ok) {
-      const err = await response.json();
-      throw new Error(err.message || "Login failed");
-    }
-
     const data = await response.json();
 
-    localStorage.setItem("User", JSON.stringify(data.user.name));
-    localStorage.setItem("Token", JSON.stringify(data.token));
-    localStorage.setItem("Role", JSON.stringify(data.user.role));
+    if (!response.ok) {
+      throw new Error(data.message || "Login failed");
+    }
+
+    localStorage.clear();
+
+    localStorage.setItem("User", data.user.name);
+    localStorage.setItem("Token", data.token);
+    localStorage.setItem("Role", data.user.role);
 
     const from = location.state?.from?.pathname;
 
-    if (from) {
+    if (from && from !== "/login") {
       navigate(from);
     } else if (data.user.role === "admin") {
-      navigate("/admin/AllOrders");
+      navigate("/admin/orders");
     } else {
       navigate("/");
     }
