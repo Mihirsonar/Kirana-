@@ -45,7 +45,7 @@ const handleLogin = async (e) => {
     if (from && from !== "/login") {
       navigate(from);
     } else if (data.user.role === "admin") {
-      navigate("/admin/orders");
+      navigate("/admin/AllOrders");
     } else {
       navigate("/");
     }
