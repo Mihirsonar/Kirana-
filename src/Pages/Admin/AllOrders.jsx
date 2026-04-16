@@ -17,8 +17,9 @@ const AllOrders = () => {
           }
         );
 
-        if (!res.ok) throw new Error("Failed to fetch orders");
-
+if (!res.ok) {
+  throw new Error(data.message || "Failed to fetch orders");
+}
         const data = await res.json();
         setOrders(data);
       } catch (err) {
