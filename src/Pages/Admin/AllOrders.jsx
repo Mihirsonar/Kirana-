@@ -61,10 +61,15 @@ const AllOrders = () => {
       </div>
 
       {/* PRODUCTS */}
-      <div className="w-2/4 text-sm dark:text-white">
+      <div className="w-2/4 text-sm dark:text-white ">
         {order.products.map((item, i) => (
-          <div key={i}>
-            {item.product?.name} × {item.quantity}
+          <div key={i} className="flex justify-between text-gray-600 dark:text-gray-300">
+            <span className="flex w-28 gap-1 items-center">
+              {item.product?.name || "Item"}  
+            </span>
+            <span className="flex font-medium">x{item.quantity}</span>
+            <span>₹{item.price * item.quantity}</span>
+
           </div>
         ))}
       </div>

@@ -27,7 +27,7 @@ const PaymentPage = () => {
   const delivery = cartItems.length ? 20 : 0;
   const total = subtotal + delivery;
 
- const handlePayment = async () => {
+const handlePayment = async () => {
   if (!selectedAddress) return toast.error("Select address first 🚚");
   if (!cartItems.length) return toast.error("Cart is empty 🛒");
 
@@ -48,8 +48,6 @@ const PaymentPage = () => {
       address: selectedAddress,
     };
 
-    console.log("SENDING ORDER:", orderData);
-
     const res = await axios.post(
       "https://local-swart.vercel.app/api/orders",
       orderData,
@@ -60,18 +58,22 @@ const PaymentPage = () => {
       }
     );
 
-    console.log("SUCCESS:", res.data);
+    const createdOrder = res.data.order;
+    console.log("Created Order:", createdOrder);
 
     dispatch(clearCart());
+
     toast.success("Order placed 🎉");
 
-    setTimeout(() => navigate("/"), 1500);
+    navigate("/order-success", {
+      state: { order: createdOrder },
+    });
+
   } catch (error) {
     console.error("ERROR:", error.response?.data);
     toast.error("Failed to place order ❌");
   }
 };
-
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <ToastContainer position="bottom-right" autoClose={1000} />

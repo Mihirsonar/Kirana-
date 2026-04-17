@@ -16,11 +16,12 @@ import ProtectedRoute from './Components/ProtectedRoute';
 import AllOrders from './Pages/Admin/AllOrders';
 import AdminRoute from './Components/AdminRoute';
 import Profile from './Pages/Profile';
+import OrderSuccess from './Pages/Order-success';
 
 function Routing() {
   const location = useLocation();
 
-  const hideHeaderFooterPaths = ['/login', '/register', '/adminpanel', '/cart', '/orders', '/address','/payment'];
+  const hideHeaderFooterPaths = ['/login', '/register', '/adminpanel', '/cart', '/orders', '/address','/payment','/order-success'];
 
   const shouldHideHeaderFooter = hideHeaderFooterPaths.some(path =>
     location.pathname.startsWith(path)
@@ -36,6 +37,7 @@ function Routing() {
         <Route path='/login' element={<LoginPage />} />
         <Route path='/register' element={<SignInPage />} />
         <Route path='/profile' element={<Profile />} />
+        <Route path='/order-success' element={<OrderSuccess />} />
         {/* <Route path='/adminpanel/*' element={<Adminpanel />} /> */}
         <Route
           path='/cart'
