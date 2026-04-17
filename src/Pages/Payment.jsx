@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import { useDispatch, useSelector } from "react-redux";
+import axios from "axios";
 import { clearCart } from "../redux/Slice/CartSlice";
 import CartHeader from "../Components/CartHeader";
 
@@ -26,34 +27,60 @@ const PaymentPage = () => {
   const delivery = cartItems.length ? 20 : 0;
   const total = subtotal + delivery;
 
-  const handlePayment = () => {
-    if (!selectedAddress) return toast.error("Select address first 🚚");
-    if (!cartItems.length) return toast.error("Cart is empty 🛒");
+ const handlePayment = async () => {
+  if (!selectedAddress) return toast.error("Select address first 🚚");
+  if (!cartItems.length) return toast.error("Cart is empty 🛒");
+
+  try {
+    const token = localStorage.getItem("Token");
+
+    const currentCart = [...cartItems];
+
+    const items = currentCart.map((item) => ({
+      productId: item._id,
+      quantity: item.quantity,
+      price: item.price,
+    }));
+
+    const orderData = {
+      items,
+      totalAmount: total,
+      address: selectedAddress,
+    };
+
+    console.log("SENDING ORDER:", orderData);
+
+    const res = await axios.post(
+      "https://local-swart.vercel.app/api/orders",
+      orderData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    console.log("SUCCESS:", res.data);
 
     dispatch(clearCart());
     toast.success("Order placed 🎉");
 
     setTimeout(() => navigate("/"), 1500);
-  };
+  } catch (error) {
+    console.error("ERROR:", error.response?.data);
+    toast.error("Failed to place order ❌");
+  }
+};
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-           <ToastContainer
-              position="bottom-right"
-              autoClose={1000}
-              toastStyle={{ width: "260px", borderRadius: "10px" }}
-            />
+      <ToastContainer position="bottom-right" autoClose={1000} />
+
       <CartHeader currentStep="Payment" />
 
-      {/* MAIN CONTAINER */}
       <div className="max-w-7xl mx-auto px-4 py-6">
-
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-          {/* LEFT CONTENT */}
           <div className="lg:col-span-2 flex flex-col gap-6">
-
-            {/* ADDRESS */}
             <div className="bg-white dark:bg-gray-900 border dark:border-gray-800 rounded-xl p-5">
               <h3 className="font-semibold mb-2 dark:text-white">
                 Delivery Address
@@ -71,7 +98,6 @@ const PaymentPage = () => {
               )}
             </div>
 
-            {/* PAYMENT METHOD */}
             <div className="bg-white dark:bg-gray-900 border dark:border-gray-800 rounded-xl p-5">
               <h3 className="font-semibold mb-3 dark:text-white">
                 Payment Method
@@ -96,7 +122,6 @@ const PaymentPage = () => {
               </div>
             </div>
 
-            {/* ITEMS */}
             <div className="bg-white dark:bg-gray-900 border dark:border-gray-800 rounded-xl p-5">
               <h3 className="font-semibold mb-3 dark:text-white">
                 Order Items
@@ -128,10 +153,8 @@ const PaymentPage = () => {
             </div>
           </div>
 
-          {/* RIGHT SUMMARY */}
           <div className="lg:sticky lg:top-24 h-fit">
             <div className="bg-white dark:bg-gray-900 border dark:border-gray-800 rounded-xl p-5">
-
               <h3 className="font-semibold mb-4 dark:text-white">
                 Order Summary
               </h3>
@@ -157,7 +180,6 @@ const PaymentPage = () => {
                 <span className="text-green-600">₹{total}</span>
               </div>
 
-              {/* CTA */}
               <button
                 onClick={handlePayment}
                 disabled={!cartItems.length}

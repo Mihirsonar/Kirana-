@@ -2,25 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
-
-
-h1{
-    font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
-    font-size: 50px;
-    font-weight: 600;
-    
+h1 {
+  font-family: Cambria, Cochin, Georgia, Times, "Times New Roman", serif;
+  font-size: 50px;
+  font-weight: 600;
 }
-
-dark .dark-mode{
-    background-color: #1a202c;
-    color: white;
-}
-
-light .light-mode{
-    background-color: white;
-    color: black;
-}
-
 
 .Toastify__toast {
   width: 260px !important;

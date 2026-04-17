@@ -6,7 +6,7 @@ const AllOrders = () => {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-    const token = localStorage.getItem("Token");
+        const token = localStorage.getItem("Token");
 
         const res = await fetch(
           "https://local-swart.vercel.app/api/orders/admin",
@@ -17,12 +17,14 @@ const AllOrders = () => {
           }
         );
 
-if (!res.ok) {
-  throw new Error(data.message || "Failed to fetch orders");
-}
         const data = await res.json();
-        setOrders(data);
-        console.log("Fetched orders:", data);
+        console.log("Fetched Orders:", data);
+
+        if (!res.ok) {
+          throw new Error(data.message || "Failed to fetch orders");
+        }
+
+        setOrders(data.orders || []);
       } catch (err) {
         console.error(err);
       }
@@ -33,47 +35,48 @@ if (!res.ok) {
 
   return (
     <div className="p-6 bg-gray-50 dark:bg-gray-950 min-h-screen dark:text-white">
-      <h2 className="text-xl font-semibold mb-6 dark:text-white">
-        All Orders
-      </h2>
+      <h2 className="text-xl font-semibold mb-6">All Orders</h2>
 
       {orders.length === 0 ? (
         <p className="text-gray-500">No orders found</p>
       ) : (
-        <div className="space-y-4 ">
-          {orders.orders.map((order) => (
-            <div
-              key={order._id}
-              className="p-4 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
-            >
-              <p className="text-xs text-gray-400 mb-1 dark:text-gray-200">
-                Order ID: {order._id.slice(-6)}
-              </p>
+  <div className="space-y-3">
+  {orders.map((order) => (
 
-              <p className="text-sm text-gray-500 dark:text-gray-200">
-                {order.user?.name} ({order.user?.email})
-              </p>
+    
+    <div
+      key={order._id}
+      className="flex items-center justify-between p-4 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 gap-6"
+    >
+      {/* ORDER ID */}
+      <div className="w-1/4">
 
-              {/* <p className="text-xs text-gray-400 dark:text-gray-200">
-                {new Date(order.createdAt).toLocaleString()}
-              </p> */}
+      <p className="text-sm text-gray-600 dark:text-gray-300">
+          {order.user?.name || "Unknown User"}
+      </p>
+      
+      <div className="w-1/4 text-sm text-gray-500 dark:text-gray-400">
+        {order._id.slice(-8)}
+      </div>
+      </div>
 
-              <div className="mt-2 space-y-1 text-sm">
-                {order.items.map((item, i) => (
-                  <div key={i} className="flex justify-between">
-                    <span>{item.name}</span>
-                    <span>x{item.quantity}</span>
-                  </div>
-                ))}
-              </div>
+      {/* PRODUCTS */}
+      <div className="w-2/4 text-sm dark:text-white">
+        {order.products.map((item, i) => (
+          <div key={i}>
+            {item.product?.name} × {item.quantity}
+          </div>
+        ))}
+      </div>
 
-              <div className="mt-3 flex justify-between font-semibold">
-                <span>Total</span>
-                <span>₹{order.totalAmount}</span>
-              </div>
-            </div>
-          ))}
-        </div>
+
+      {/* TOTAL */}
+      <div className="w-1/4 text-right font-semibold text-green-600">
+        ₹{order.totalAmount}
+      </div>
+    </div>
+  ))}
+</div>
       )}
     </div>
   );

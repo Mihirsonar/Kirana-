@@ -13,17 +13,35 @@ function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState("");
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const darkMode = useSelector((state) => state.theme.darkmode);
   const cartItems = useSelector((state) => state.cart.cartItems || []);
   const cartCount = cartItems.length;
 
+useEffect(() => {
+  const token = localStorage.getItem("Token");
+  const rawUser = localStorage.getItem("User");
+
+  let user = {};
+
+  try {
+    user = JSON.parse(rawUser);
+  } catch {
+    user = { name: rawUser };
+  }
+
+  setIsLoggedIn(!!token);
+  if (user?.name) setUserName(user.name);
+}, []);
+
   useEffect(() => {
-    const token = localStorage.getItem("Token");
-    const user = localStorage.getItem("User")?.name || "";
-    setIsLoggedIn(!!token);
-    if (user) setUserName(user);
-  }, []);
+    const handleClickOutside = () => setDropdownOpen(false);
+    if (dropdownOpen) {
+      window.addEventListener("click", handleClickOutside);
+    }
+    return () => window.removeEventListener("click", handleClickOutside);
+  }, [dropdownOpen]);
 
   const navLinks = [
     { name: "Home", path: "/" },
@@ -34,8 +52,6 @@ function Header() {
   return (
     <header className="sticky top-0 z-50 backdrop-blur-lg bg-white/80 dark:bg-gray-900/90 border-b border-gray-200 dark:border-gray-800 dark:text-white">
       <div className="flex items-center justify-between px-6 py-3 max-w-7xl mx-auto">
-
-        {/* LEFT */}
         <div className="flex items-center gap-6 w-full">
           <Link
             to="/"
@@ -50,10 +66,7 @@ function Header() {
           </div>
         </div>
 
-        {/* RIGHT */}
         <div className="flex items-center gap-5">
-
-          {/* THEME TOGGLE */}
           <button
             onClick={() => dispatch(toggleTheme())}
             className="p-2 rounded-lg border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
@@ -61,7 +74,6 @@ function Header() {
             {darkMode ? "🌞" : "🌙"}
           </button>
 
-          {/* CART */}
           <Link to="/cart" className="relative">
             <PiShoppingCartThin className="w-6 h-6" />
             {cartCount > 0 && (
@@ -71,29 +83,41 @@ function Header() {
             )}
           </Link>
 
-          {/* USER */}
           {isLoggedIn ? (
-            <div className="relative group">
-              <button className="flex items-center gap-2 font-medium">
+            <div className="relative">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setDropdownOpen(!dropdownOpen);
+                }}
+                className="flex items-center gap-2 font-medium"
+              >
                 <IoPersonCircleOutline className="w-6 h-6" />
                 {userName.split(" ")[0]}
               </button>
 
-              <div className="absolute right-0 mt-2 w-44 rounded-lg shadow-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hidden group-hover:block">
-                <Link className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700" to="/profile">
-                  Profile
-                </Link>
-                <button
-                  onClick={() => {
-                    localStorage.removeItem("Token");
-                    localStorage.removeItem("User");
-                    setIsLoggedIn(false);
-                  }}
-                  className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700"
-                >
-                  Logout
-                </button>
-              </div>
+              {dropdownOpen && (
+                <div className="absolute right-0 mt-2 w-44 rounded-lg shadow-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                  <Link
+                    to="/profile"
+                    onClick={() => setDropdownOpen(false)}
+                    className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  >
+                    Profile
+                  </Link>
+                  <button
+                    onClick={() => {
+                      localStorage.removeItem("Token");
+                      localStorage.removeItem("User");
+                      setIsLoggedIn(false);
+                      setDropdownOpen(false);
+                    }}
+                    className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
             </div>
           ) : (
             <Link to="/login">
@@ -103,7 +127,6 @@ function Header() {
             </Link>
           )}
 
-          {/* MOBILE MENU BUTTON */}
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
             className="md:hidden text-2xl"
@@ -113,14 +136,12 @@ function Header() {
         </div>
       </div>
 
-      {/* MOBILE MENU */}
       <div
         className={`md:hidden px-6 pb-4 transition-all duration-300 ${
           mobileOpen ? "block" : "hidden"
         }`}
       >
         <SearchBar />
-
         <div className="flex flex-col gap-4 mt-4 font-medium">
           {navLinks.map((link) => (
             <Link key={link.name} to={link.path}>

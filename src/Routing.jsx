@@ -15,6 +15,7 @@ import PaymentPage from './Pages/Payment';
 import ProtectedRoute from './Components/ProtectedRoute';
 import AllOrders from './Pages/Admin/AllOrders';
 import AdminRoute from './Components/AdminRoute';
+import Profile from './Pages/Profile';
 
 function Routing() {
   const location = useLocation();
@@ -34,6 +35,7 @@ function Routing() {
         <Route path='/contact' element={<Contact />} />
         <Route path='/login' element={<LoginPage />} />
         <Route path='/register' element={<SignInPage />} />
+        <Route path='/profile' element={<Profile />} />
         {/* <Route path='/adminpanel/*' element={<Adminpanel />} /> */}
         <Route
           path='/cart'

@@ -2,16 +2,12 @@ import { BrowserRouter } from "react-router-dom";
 import Routing from "./Routing";
 import { useSelector } from "react-redux";
 import { useEffect } from "react";
-
+import ThemeHandler from "./Components/ThemeHandler";
 function App() {
-  const darkMode = useSelector((state) => state.theme.darkmode);
-
-useEffect(() => {
-  document.documentElement.classList.toggle("dark", darkMode);
-}, [darkMode]);
 
   return (
     <BrowserRouter>
+    <ThemeHandler />
       <Routing />
     </BrowserRouter>
   );

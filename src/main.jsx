@@ -6,14 +6,11 @@ import { store } from './redux/Store'
 import { Provider } from 'react-redux'
 import { setCartItems } from './redux/Slice/CartSlice';
 import App from './App';
+import ThemeHandler from './Components/ThemeHandler';
 
-const theme = localStorage.getItem("theme");
-
-if (theme === "dark") {
-document.documentElement.classList.add("dark");
-}
 createRoot(document.getElementById('root')).render(
 <Provider store={store}>
+<ThemeHandler />
 <App/>
   </Provider>
 )
