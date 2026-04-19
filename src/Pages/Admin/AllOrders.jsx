@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import axios from "axios";
 
 const AllOrders = () => {
   const [orders, setOrders] = useState([]);
@@ -7,6 +8,7 @@ const AllOrders = () => {
     const fetchOrders = async () => {
       try {
         const token = localStorage.getItem("Token");
+
 
         const res = await fetch(
           "https://local-swart.vercel.app/api/orders/admin",
@@ -28,6 +30,28 @@ const AllOrders = () => {
 
     fetchOrders();
   }, []);
+
+  const handleStatusChange = async (id, status) => {
+  try {
+    const token = localStorage.getItem("Token");
+
+    await axios.put(
+      `https://local-swart.vercel.app/api/orders/${id}/status`,
+      { status },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    setOrders((prev) =>
+      prev.map((o) => (o._id === id ? { ...o, status } : o))
+    );
+  } catch (err) {
+    console.error(err);
+  }
+};
 
   return (
     <div className="p-6 bg-gray-50 dark:bg-gray-950 min-h-screen text-gray-800 dark:text-white">
@@ -128,14 +152,15 @@ const AllOrders = () => {
                 View
               </button>
 
-              <select
-                className="text-sm px-3 py-1 rounded-md border dark:bg-gray-800"
-                defaultValue={order.status}
-              >
-                <option>Pending</option>
-                <option>Processing</option>
-                <option>Delivered</option>
-              </select>
+<select
+  value={order.status}
+  onChange={(e) => handleStatusChange(order._id, e.target.value)}
+  className="border px-2 py-1 rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300"
+>
+  <option value="Pending">Pending</option>
+  <option value="Processing">Processing</option>
+  <option value="Delivered">Delivered</option>
+</select>
             </div>
           </div>
         ))}

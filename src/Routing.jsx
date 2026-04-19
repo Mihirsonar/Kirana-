@@ -17,6 +17,7 @@ import AllOrders from './Pages/Admin/AllOrders';
 import AdminRoute from './Components/AdminRoute';
 import Profile from './Pages/Profile';
 import OrderSuccess from './Pages/Order-success';
+import MyOrders from './Pages/Myorders';
 
 function Routing() {
   const location = useLocation();
@@ -53,6 +54,15 @@ function Routing() {
             <ProtectedRoute>
               <Orders />
             </ProtectedRoute>
+          }
+        />
+                 <Route
+          path='/myorders'
+          element={
+       <ProtectedRoute>
+         <MyOrders />
+       </ProtectedRoute>
+       
           }
         />
          <Route
