@@ -1,4 +1,4 @@
-import React from 'react';
+import React,{Suspense,lazy}from 'react';
 import { Route, Routes, useLocation } from 'react-router-dom';
 import Home from './Pages/Home';
 import About from './Pages/About';
@@ -13,11 +13,13 @@ import Orders from './Pages/Orders';
 import AddressPage from './Pages/Address';
 import PaymentPage from './Pages/Payment';
 import ProtectedRoute from './Components/ProtectedRoute';
-import AllOrders from './Pages/Admin/AllOrders';
+// import AllOrders from './Pages/Admin/AllOrders';
 import AdminRoute from './Components/AdminRoute';
 import Profile from './Pages/Profile';
 import OrderSuccess from './Pages/Order-success';
 import MyOrders from './Pages/Myorders';
+
+const AllOrdersLazy = lazy(() => import('./Pages/Admin/AllOrders'));
 
 function Routing() {
   const location = useLocation();
@@ -95,7 +97,9 @@ function Routing() {
   path="/admin/AllOrders"
   element={
     <AdminRoute>
-      <AllOrders />
+      <Suspense fallback={<div>Loading...</div>}>
+      <AllOrdersLazy />
+      </Suspense>
     </AdminRoute>
   }
 />

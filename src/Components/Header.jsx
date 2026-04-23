@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link,useNavigate} from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { PiShoppingCartThin } from "react-icons/pi";
 import { IoPersonCircleOutline } from "react-icons/io5";
@@ -9,6 +9,8 @@ import SearchBar from "./Search";
 
 function Header() {
   const dispatch = useDispatch();
+
+  const navigate = useNavigate();
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -113,6 +115,7 @@ useEffect(() => {
                       setDropdownOpen(false);
                     }}
                     className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    onClick={() => navigate("/login")}
                   >
                     Logout
                   </button>
