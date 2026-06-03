@@ -1,111 +1,150 @@
-import React,{Suspense,lazy}from 'react';
-import { Route, Routes, useLocation } from 'react-router-dom';
-import Home from './Pages/Home';
-import About from './Pages/About';
-import Contact from './Pages/Contact';
-import Header from './Components/Header';
-import Footer from './Components/Footer';
-import Cart from './Pages/Cart';
-import LoginPage from './Pages/Login';
-import SignInPage from './Pages/Register';
-// import Adminpanel from './Pages/Vender/Vender.Adminpanel';
-import Orders from './Pages/Orders';
-import AddressPage from './Pages/Address';
-import PaymentPage from './Pages/Payment';
-import ProtectedRoute from './Components/ProtectedRoute';
-// import AllOrders from './Pages/Admin/AllOrders';
-import AdminRoute from './Components/AdminRoute';
-import Profile from './Pages/Profile';
-import OrderSuccess from './Pages/Order-success';
-import MyOrders from './Pages/Myorders';
+import React, { Suspense, lazy } from "react";
+import { Route, Routes, useLocation } from "react-router-dom";
 
-const AllOrdersLazy = lazy(() => import('./Pages/Admin/AllOrders'));
+// Public Pages
+import Home from "./Pages/Home";
+import About from "./Pages/About";
+import Contact from "./Pages/Contact";
+import LoginPage from "./Pages/Login";
+import SignInPage from "./Pages/Register";
+import Profile from "./Pages/Profile";
+
+// Components
+import Header from "./Components/Header";
+import Footer from "./Components/Footer";
+import ProtectedRoute from "./Components/ProtectedRoute";
+import AdminRoute from "./Components/AdminRoute";
+
+// Shopping Flow
+import Cart from "./Pages/Cart";
+import Orders from "./Pages/Orders";
+import AddressPage from "./Pages/Address";
+import PaymentPage from "./Pages/Payment";
+import OrderSuccess from "./Pages/Order-success";
+import MyOrders from "./Pages/Myorders";
+
+// Lazy Loaded Admin Pages
+const AllOrdersLazy = lazy(() =>
+  import("./Pages/Admin/AllOrders")
+);
 
 function Routing() {
   const location = useLocation();
 
-  const hideHeaderFooterPaths = ['/login', '/register', '/adminpanel', '/cart', '/orders', '/address','/payment','/order-success'];
+  const hideHeaderFooterPaths = [
+    "/login",
+    "/register",
+    "/cart",
+    "/orders",
+    "/address",
+    "/payment",
+    "/order-success",
+    "/admin",
+  ];
 
-  const shouldHideHeaderFooter = hideHeaderFooterPaths.some(path =>
-    location.pathname.startsWith(path)
-  );
+  const shouldHideHeaderFooter =
+    hideHeaderFooterPaths.some((path) =>
+      location.pathname.startsWith(path)
+    );
 
   return (
     <>
       {!shouldHideHeaderFooter && <Header />}
+
       <Routes>
-        <Route path='/' element={<Home />} />
-        <Route path='/about' element={<About />} />
-        <Route path='/contact' element={<Contact />} />
-        <Route path='/login' element={<LoginPage />} />
-        <Route path='/register' element={<SignInPage />} />
-        <Route path='/profile' element={<Profile />} />
-        <Route path='/order-success' element={<OrderSuccess />} />
-        {/* <Route path='/adminpanel/*' element={<Adminpanel />} /> */}
+
+        {/* PUBLIC ROUTES */}
+
+        <Route path="/" element={<Home />} />
+
+        <Route path="/about" element={<About />} />
+
+        <Route path="/contact" element={<Contact />} />
+
+        <Route path="/login" element={<LoginPage />} />
+
+        <Route path="/register" element={<SignInPage />} />
+
+        <Route path="/profile" element={<Profile />} />
+
         <Route
-          path='/cart'
+          path="/order-success"
+          element={<OrderSuccess />}
+        />
+
+        {/* PROTECTED ROUTES */}
+
+        <Route
+          path="/cart"
           element={
             <ProtectedRoute>
               <Cart />
             </ProtectedRoute>
           }
         />
-         <Route
-          path='/orders'
+
+        <Route
+          path="/orders"
           element={
             <ProtectedRoute>
               <Orders />
             </ProtectedRoute>
           }
         />
-                 <Route
-          path='/myorders'
+
+        <Route
+          path="/myorders"
           element={
-       <ProtectedRoute>
-         <MyOrders />
-       </ProtectedRoute>
-       
+            <ProtectedRoute>
+              <MyOrders />
+            </ProtectedRoute>
           }
         />
-         <Route
-          path='/address'
+
+        <Route
+          path="/address"
           element={
             <ProtectedRoute>
               <AddressPage />
             </ProtectedRoute>
           }
-        />  
+        />
 
-                 <Route
-          path='/payment'
+        <Route
+          path="/payment"
           element={
             <ProtectedRoute>
               <PaymentPage />
             </ProtectedRoute>
           }
-        /> 
+        />
+
+        {/* ADMIN ROUTES */}
+
         <Route
-  path="/orders"
-  element={
-    <ProtectedRoute>
-      <Orders />
-    </ProtectedRoute>
-  }
-/>
-
-<Route
-  path="/admin/AllOrders"
-  element={
-    <AdminRoute>
-      <Suspense fallback={<div>Loading...</div>}>
-      <AllOrdersLazy />
-      </Suspense>
-    </AdminRoute>
-  }
-/>
-
+          path="/admin/AllOrders"
+          element={
+            <AdminRoute>
+              <Suspense
+                fallback={
+                  <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
+                    <div className="text-center">
+                      <div className="w-12 h-12 border-4 border-green-500 border-t-transparent rounded-full animate-spin mx-auto" />
+                      <p className="mt-4 text-slate-600 dark:text-slate-400">
+                        Loading Dashboard...
+                      </p>
+                    </div>
+                  </div>
+                }
+              >
+                <AllOrdersLazy />
+              </Suspense>
+            </AdminRoute>
+          }
+        />
 
       </Routes>
+
       {!shouldHideHeaderFooter && <Footer />}
     </>
   );

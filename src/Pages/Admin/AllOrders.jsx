@@ -1,176 +1,419 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 
 const AllOrders = () => {
   const [orders, setOrders] = useState([]);
+  const [search, setSearch] = useState("");
+  const [filterStatus, setFilterStatus] = useState("All");
+  const [expandedOrder, setExpandedOrder] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchOrders = async () => {
-      try {
-        const token = localStorage.getItem("Token");
-
-
-        const res = await fetch(
-          "https://local-swart.vercel.app/api/orders/admin",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.message);
-
-        setOrders(data.orders || []);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
     fetchOrders();
   }, []);
 
-  const handleStatusChange = async (id, status) => {
-  try {
-    const token = localStorage.getItem("Token");
+  const fetchOrders = async () => {
+    try {
+      const token = localStorage.getItem("Token");
 
-    await axios.put(
-      `https://local-swart.vercel.app/api/orders/${id}/status`,
-      { status },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      const res = await fetch(
+        "https://local-swart.vercel.app/api/orders/admin",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message);
       }
-    );
 
-    setOrders((prev) =>
-      prev.map((o) => (o._id === id ? { ...o, status } : o))
+      setOrders(data.orders || []);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleStatusChange = async (id, status) => {
+    try {
+      const token = localStorage.getItem("Token");
+
+      await axios.put(
+        `https://local-swart.vercel.app/api/orders/${id}/status`,
+        { status },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setOrders((prev) =>
+        prev.map((order) =>
+          order._id === id ? { ...order, status } : order
+        )
+      );
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const filteredOrders = useMemo(() => {
+    return orders.filter((order) => {
+      const matchesSearch =
+        order._id
+          .toLowerCase()
+          .includes(search.toLowerCase()) ||
+        order.user?.name
+          ?.toLowerCase()
+          .includes(search.toLowerCase());
+
+      const matchesStatus =
+        filterStatus === "All"
+          ? true
+          : order.status === filterStatus;
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [orders, search, filterStatus]);
+
+  const stats = {
+    total: orders.length,
+    pending: orders.filter(
+      (o) => o.status === "Pending"
+    ).length,
+    processing: orders.filter(
+      (o) => o.status === "Processing"
+    ).length,
+    delivered: orders.filter(
+      (o) => o.status === "Delivered"
+    ).length,
+  };
+
+  const getStatusStyle = (status) => {
+    switch (status) {
+      case "Delivered":
+        return "bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-300";
+
+      case "Processing":
+        return "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300";
+
+      default:
+        return "bg-orange-100 text-orange-700 dark:bg-orange-500/20 dark:text-orange-300";
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-green-500 border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="mt-4 text-slate-600 dark:text-slate-400">
+            Loading orders...
+          </p>
+        </div>
+      </div>
     );
-  } catch (err) {
-    console.error(err);
   }
-};
 
   return (
-    <div className="p-6 bg-gray-50 dark:bg-gray-950 min-h-screen text-gray-800 dark:text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6">
 
       {/* HEADER */}
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-semibold">Orders</h2>
-        <span className="text-sm text-gray-500">
-          {orders.length} total
-        </span>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
+          Orders Dashboard
+        </h1>
+
+        <p className="mt-2 text-slate-600 dark:text-slate-400">
+          Monitor and manage customer orders
+        </p>
       </div>
 
-      {/* ORDERS */}
-      <div className="space-y-5">
-        {orders.map((order) => (
-          <div
-            key={order._id}
-            className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-5 shadow-sm hover:shadow-md transition"
+      {/* STATS */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
+
+        <StatCard
+          title="Total Orders"
+          value={stats.total}
+        />
+
+        <StatCard
+          title="Pending"
+          value={stats.pending}
+        />
+
+        <StatCard
+          title="Processing"
+          value={stats.processing}
+        />
+
+        <StatCard
+          title="Delivered"
+          value={stats.delivered}
+        />
+
+      </div>
+
+      {/* FILTERS */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 mb-6 shadow-sm">
+
+        <div className="flex flex-col md:flex-row gap-4">
+
+          <input
+            type="text"
+            placeholder="Search by Order ID or Customer"
+            value={search}
+            onChange={(e) =>
+              setSearch(e.target.value)
+            }
+            className="flex-1 px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-green-500 outline-none"
+          />
+
+          <select
+            value={filterStatus}
+            onChange={(e) =>
+              setFilterStatus(e.target.value)
+            }
+            className="px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
           >
+            <option value="All">All Status</option>
+            <option value="Pending">
+              Pending
+            </option>
+            <option value="Processing">
+              Processing
+            </option>
+            <option value="Delivered">
+              Delivered
+            </option>
+          </select>
 
-            {/* TOP SECTION */}
-            <div className="flex justify-between items-start mb-4">
-              <div>
-                <p className="text-sm font-semibold">
-                  Order #{order._id.slice(-6)}
-                </p>
-                <p className="text-xs text-gray-500">
-                  {new Date(order.createdAt).toLocaleString()}
-                </p>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <span
-                  className={`px-3 py-1 text-xs rounded-full ${
-                    order.status === "Delivered"
-                      ? "bg-green-100 text-green-700"
-                      : order.status === "Processing"
-                      ? "bg-yellow-100 text-yellow-700"
-                      : "bg-gray-200 text-gray-600"
-                  }`}
-                >
-                  {order.status}
-                </span>
-
-                <span className="text-lg font-semibold text-green-600">
-                  ₹{order.totalAmount}
-                </span>
-              </div>
-            </div>
-
-            {/* USER + ADDRESS */}
-            <div className="mb-4">
-              <p className="text-sm font-medium">
-                {order.user?.name || "Unknown User"}
-              </p>
-              <p className="text-xs text-gray-500">
-                {order.address?.street}, {order.address?.city} -{" "}
-                {order.address?.zip}
-              </p>
-            </div>
-
-            {/* PRODUCT TABLE */}
-            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg overflow-hidden">
-
-              {/* HEADER */}
-              <div className="grid grid-cols-[1.2fr_2fr_0.6fr] px-3 py-2 text-xs font-semibold text-gray-500 border-b dark:border-gray-700">
-                <span>Product ID</span>
-                <span>Name</span>
-                <span className="text-right">Qty</span>
-              </div>
-
-              {/* ITEMS */}
-              <div className="divide-y dark:divide-gray-700">
-                {order.products?.map((item, i) => (
-                  <div
-                    key={i}
-                    className="grid grid-cols-[1.2fr_2fr_0.6fr] px-3 py-2 text-sm items-center hover:bg-gray-100 dark:hover:bg-gray-700 transition"
-                  >
-                    <span className="font-mono text-gray-500 truncate">
-                      {item.product?._id?.slice(-6)}
-                    </span>
-
-                    <span className="truncate dark:text-white">
-                      {item.product?.name}
-                    </span>
-
-                    <span className="text-right font-semibold">
-                      {item.quantity}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* ACTIONS */}
-            <div className="flex justify-end gap-3 mt-4">
-              <button className="text-sm px-3 py-1 rounded-md bg-gray-200 dark:bg-gray-700 hover:bg-gray-300">
-                View
-              </button>
-
-<select
-  value={order.status}
-  onChange={(e) => handleStatusChange(order._id, e.target.value)}
-  className="border px-2 py-1 rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300"
->
-  <option value="Pending">Pending</option>
-  <option value="Processing">Processing</option>
-  <option value="Delivered">Delivered</option>
-</select>
-            </div>
-          </div>
-        ))}
+        </div>
       </div>
 
-      {orders.length === 0 && (
-        <div className="text-center text-gray-500 mt-10">
-          No orders found
+      {/* TABLE */}
+      <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+
+        <div className="overflow-x-auto">
+
+          <table className="w-full">
+
+            <thead className="bg-slate-50 dark:bg-slate-800">
+
+              <tr>
+
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  Order
+                </th>
+
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  Customer
+                </th>
+
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  Address
+                </th>
+
+                <th className="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  Items
+                </th>
+
+                <th className="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  Amount
+                </th>
+
+                <th className="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  Status
+                </th>
+
+                <th className="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  Date
+                </th>
+
+                <th className="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  Actions
+                </th>
+
+              </tr>
+
+            </thead>
+
+            <tbody>
+
+              {filteredOrders.map((order) => (
+                <React.Fragment key={order._id}>
+
+                  <tr className="border-t border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition">
+
+                    <td className="px-6 py-4">
+                      <div>
+                        <p className="font-semibold text-slate-900 dark:text-white">
+                          #{order._id.slice(-6)}
+                        </p>
+                      </div>
+                    </td>
+
+                    <td className="px-6 py-4">
+                      <p className="font-medium text-slate-900 dark:text-white">
+                        {order.user?.name ||
+                          "Unknown User"}
+                      </p>
+                    </td>
+
+                    <td className="px-6 py-4 max-w-xs truncate text-slate-600 dark:text-slate-400">
+                      {order.address?.street},{" "}
+                      {order.address?.city}
+                    </td>
+
+                    <td className="px-6 py-4 text-center text-slate-900 dark:text-white">
+                      {order.products?.length}
+                    </td>
+
+                    <td className="px-6 py-4 text-center font-bold text-emerald-600 dark:text-emerald-400">
+                      ₹{order.totalAmount}
+                    </td>
+
+                    <td className="px-6 py-4 text-center">
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusStyle(
+                          order.status
+                        )}`}
+                      >
+                        {order.status}
+                      </span>
+                    </td>
+
+                    <td className="px-6 py-4 text-center text-slate-600 dark:text-slate-400">
+                      {new Date(
+                        order.createdAt
+                      ).toLocaleDateString()}
+                    </td>
+
+                    <td className="px-6 py-4">
+
+                      <div className="flex justify-center gap-2">
+
+                        <button
+                          onClick={() =>
+                            setExpandedOrder(
+                              expandedOrder ===
+                                order._id
+                                ? null
+                                : order._id
+                            )
+                          }
+                          className="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition"
+                        >
+                          View
+                        </button>
+
+                        <select
+                          value={order.status}
+                          onChange={(e) =>
+                            handleStatusChange(
+                              order._id,
+                              e.target.value
+                            )
+                          }
+                          className="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+                        >
+                          <option value="Pending">
+                            Pending
+                          </option>
+                          <option value="Processing">
+                            Processing
+                          </option>
+                          <option value="Delivered">
+                            Delivered
+                          </option>
+                        </select>
+
+                      </div>
+
+                    </td>
+
+                  </tr>
+
+                  {expandedOrder === order._id && (
+                    <tr className="bg-slate-50 dark:bg-slate-800/50">
+                      <td colSpan="8" className="p-5">
+
+                        <h3 className="font-semibold mb-4 text-slate-900 dark:text-white">
+                          Ordered Products
+                        </h3>
+
+                        <div className="space-y-3">
+
+                          {order.products?.map(
+                            (item, index) => (
+                              <div
+                                key={index}
+                                className="flex justify-between items-center p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700"
+                              >
+                                <span className="font-medium text-slate-900 dark:text-white">
+                                  {
+                                    item.product
+                                      ?.name
+                                  }
+                                </span>
+
+                                <span className="text-slate-600 dark:text-slate-400">
+                                  Qty:{" "}
+                                  {item.quantity}
+                                </span>
+                              </div>
+                            )
+                          )}
+
+                        </div>
+
+                      </td>
+                    </tr>
+                  )}
+
+                </React.Fragment>
+              ))}
+
+            </tbody>
+
+          </table>
+
+        </div>
+      </div>
+
+      {!filteredOrders.length && (
+        <div className="text-center py-20">
+          <h3 className="text-xl font-semibold text-slate-700 dark:text-slate-300">
+            No Orders Found
+          </h3>
+
+          <p className="mt-2 text-slate-500 dark:text-slate-400">
+            Orders will appear here once customers place them.
+          </p>
         </div>
       )}
+    </div>
+  );
+};
+
+const StatCard = ({ title, value }) => {
+  return (
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
+
+      <p className="text-sm text-slate-500 dark:text-slate-400">
+        {title}
+      </p>
+
+      <h2 className="mt-2 text-3xl font-bold text-slate-900 dark:text-white">
+        {value}
+      </h2>
+
     </div>
   );
 };
