@@ -60,7 +60,7 @@ function Adminpanel() {
     //   const [orders, setOrders] = useState([]);
     
     //   useEffect(() => {
-    //     axios.get('https://local-swart.vercel.app/api/orders')
+    //     axios.get(`${import.meta.env.VITE_APP_BACKEND_URL}/api/orders`)
     //       .then(response => {
     //         setOrders(response.data);
     //         console.log(response.data);
@@ -187,7 +187,7 @@ export default Adminpanel;
 //   const [orders, setOrders] = useState([]);
 
 //   useEffect(() => {
-//     axios.get('https://local-swart.vercel.app/api/orders/orders/orders')
+//     axios.get(`${import.meta.env.VITE_APP_BACKEND_URL}/api/orders/orders/orders`)
 //       .then(response => {
 //         setOrders(response.data);
 //       })

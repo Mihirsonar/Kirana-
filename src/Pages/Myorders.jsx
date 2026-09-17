@@ -11,7 +11,7 @@ const MyOrders = () => {
       const token = localStorage.getItem("Token");
 
       const { data } = await axios.get(
-        "https://local-swart.vercel.app/api/orders/my",
+        `${import.meta.env.VITE_APP_BACKEND_URL}/api/orders/my`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -28,8 +28,8 @@ const MyOrders = () => {
   useEffect(() => {
     fetchOrders();
 
-    const interval = setInterval(fetchOrders, 5000);
-    return () => clearInterval(interval);
+    // const interval = setInterval(fetchOrders, 5000);
+    // return () => clearInterval(interval);
   }, []);
 
   const getStatusStyle = (status) => {
@@ -48,7 +48,7 @@ const MyOrders = () => {
   return (
     <div className="p-4 md:p-6 bg-gray-50 dark:bg-gray-950 min-h-screen">
       <h1 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">
-        My Orders 
+        My Orders
       </h1>
 
       {orders.length === 0 ? (

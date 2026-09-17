@@ -7,7 +7,7 @@ const Orders = () => {
     const fetchOrders = async () => {
       const token = JSON.parse(localStorage.getItem("Token"));
 
-      const res = await fetch("https://local-swart.vercel.app/api/orders/my", {
+      const res = await fetch(`${import.meta.env.VITE_APP_BACKEND_URL}/api/orders/my`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

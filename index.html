@@ -5,14 +5,22 @@
     <link rel="icon" type="image/svg+xml" href="https://static.vecteezy.com/system/resources/previews/016/471/452/original/abstract-modern-ecommerce-logo-ecommerce-logo-design-shop-logo-design-template-creative-ecommerce-logo-vector.jpg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Kirana+</title>
+    <script>
+      (function() {
+        try {
+          var saved = localStorage.getItem("theme");
+          if (saved === "dark" || (!saved && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+            document.documentElement.classList.add("dark");
+          } else {
+            document.documentElement.classList.remove("dark");
+          }
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
-    <div id="root">
-    </div>
-    <script type="module" src="/src/main.jsx">
-        if (localStorage.getItem("theme") === "dark") {
-    document.documentElement.classList.add("dark");
-  }
-    </script>
+    <div id="root"></div>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

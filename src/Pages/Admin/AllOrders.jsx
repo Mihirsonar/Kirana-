@@ -17,7 +17,7 @@ const AllOrders = () => {
       const token = localStorage.getItem("Token");
 
       const res = await fetch(
-        "https://local-swart.vercel.app/api/orders/admin",
+        `${import.meta.env.VITE_APP_BACKEND_URL}/api/orders/admin`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -44,7 +44,7 @@ const AllOrders = () => {
       const token = localStorage.getItem("Token");
 
       await axios.put(
-        `https://local-swart.vercel.app/api/orders/${id}/status`,
+        `${import.meta.env.VITE_APP_BACKEND_URL}/api/orders/${id}/status`,
         { status },
         {
           headers: {

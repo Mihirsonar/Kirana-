@@ -16,7 +16,7 @@ const SignInPage = () => {
 
     try {
       const response = await fetch(
-        "https://local-swart.vercel.app/api/auth/register",
+        `${import.meta.env.VITE_APP_BACKEND_URL}/api/auth/register`,
         {
           method: "POST",
           headers: {

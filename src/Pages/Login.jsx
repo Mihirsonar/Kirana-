@@ -11,51 +11,53 @@ const LoginPage = () => {
 
   const navigate = useNavigate();
 
-const location = useLocation();
+  const location = useLocation();
 
-const handleLogin = async (e) => {
-  e.preventDefault();
-  setLoading(true);
-  setError("");
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
 
-  try {
-    const response = await fetch(
-      "https://local-swart.vercel.app/api/auth/login",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_APP_BACKEND_URL}/api/auth/login`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Login failed");
       }
-    );
 
-    const data = await response.json();
+      localStorage.removeItem("User");
+      localStorage.removeItem("Token");
+      localStorage.removeItem("Role");
 
-    if (!response.ok) {
-      throw new Error(data.message || "Login failed");
+      localStorage.setItem("User", data.user.name);
+      localStorage.setItem("Token", data.token);
+      localStorage.setItem("Role", data.user.role);
+
+      const from = location.state?.from?.pathname;
+
+      if (from && from !== "/login") {
+        navigate(from);
+      } else if (data.user.role === "admin") {
+        navigate("/admin/AllOrders");
+      } else {
+        navigate("/");
+      }
+
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
-
-    localStorage.clear();
-
-    localStorage.setItem("User", data.user.name);
-    localStorage.setItem("Token", data.token);
-    localStorage.setItem("Role", data.user.role);
-
-    const from = location.state?.from?.pathname;
-
-    if (from && from !== "/login") {
-      navigate(from);
-    } else if (data.user.role === "admin") {
-      navigate("/admin/AllOrders");
-    } else {
-      navigate("/");
-    }
-
-  } catch (err) {
-    setError(err.message);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   return (
     <BackgroundLines className="min-h-screen flex items-center justify-center px-4">

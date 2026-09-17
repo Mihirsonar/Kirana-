@@ -6,11 +6,9 @@ import { store } from './redux/Store'
 import { Provider } from 'react-redux'
 import { setCartItems } from './redux/Slice/CartSlice';
 import App from './App';
-import ThemeHandler from './Components/ThemeHandler';
 
 createRoot(document.getElementById('root')).render(
-<Provider store={store}>
-<ThemeHandler />
-<App/>
+  <Provider store={store}>
+    <App />
   </Provider>
 )
