@@ -6,48 +6,93 @@ import "react-toastify/dist/ReactToastify.css";
 
 const AddressPage = () => {
   const navigate = useNavigate();
+  const BASE_URL  = import.meta.env.VITE_APP_BACKEND_URL;
+  const token     = localStorage.getItem("Token");
 
-  const [addresses, setAddresses] = useState([]);
+  const [addresses, setAddresses]   = useState([]);
   const [selectedIndex, setSelectedIndex] = useState(null);
-  const [newAddress, setNewAddress] = useState({
-    street: "",
-    city: "",
-    zip: "",
-    label: "Home",
-  });
+  const [newAddress, setNewAddress] = useState({ street: "", city: "", zip: "", label: "Home" });
   const [editingIndex, setEditingIndex] = useState(null);
+  const [loading, setLoading]       = useState(false);
 
+  // ── Helpers ────────────────────────────────────────────────────────────
+  const authHeaders = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+
+  const syncToBackend = async (updatedList, defaultIdx = null) => {
+    const defaultId = defaultIdx !== null ? updatedList[defaultIdx]?._id : null;
+    try {
+      const res = await fetch(`${BASE_URL}/api/auth/addresses`, {
+        method: "POST",
+        headers: authHeaders,
+        body: JSON.stringify({ addresses: updatedList, defaultAddressId: defaultId }),
+      });
+      const data = await res.json();
+      // Use server-assigned _ids
+      if (data.addresses) {
+        setAddresses(data.addresses);
+        localStorage.setItem("addresses", JSON.stringify(data.addresses));
+        const selAddr = defaultIdx !== null ? data.addresses[defaultIdx] : data.addresses[0];
+        if (selAddr) localStorage.setItem("selectedAddress", JSON.stringify(selAddr));
+      }
+    } catch {
+      toast.error("Failed to sync with server", { style: { width: "260px" } });
+    }
+  };
+
+  // ── Load from backend on mount ─────────────────────────────────────────
   useEffect(() => {
-    const saved = localStorage.getItem("addresses");
-    if (saved) setAddresses(JSON.parse(saved));
+    if (!token) { navigate("/login"); return; }
+    setLoading(true);
+    fetch(`${BASE_URL}/api/auth/addresses`, { headers: authHeaders })
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.addresses?.length) {
+          setAddresses(data.addresses);
+          localStorage.setItem("addresses", JSON.stringify(data.addresses));
+          // Pre-select the default/first
+          const defIdx = data.defaultAddress
+            ? data.addresses.findIndex((a) => String(a._id) === String(data.defaultAddress))
+            : 0;
+          setSelectedIndex(defIdx >= 0 ? defIdx : 0);
+          localStorage.setItem("selectedAddress", JSON.stringify(data.addresses[defIdx >= 0 ? defIdx : 0]));
+        } else {
+          // Fallback: load from localStorage
+          const saved = localStorage.getItem("addresses");
+          if (saved) setAddresses(JSON.parse(saved));
+        }
+      })
+      .catch(() => {
+        const saved = localStorage.getItem("addresses");
+        if (saved) setAddresses(JSON.parse(saved));
+      })
+      .finally(() => setLoading(false));
   }, []);
-
-  useEffect(() => {
-    localStorage.setItem("addresses", JSON.stringify(addresses));
-  }, [addresses]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewAddress((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleAddOrUpdateAddress = () => {
+  const handleAddOrUpdateAddress = async () => {
     if (!newAddress.street || !newAddress.city || !newAddress.zip) {
       return toast.error("Fill all fields", { style: { width: "260px" } });
     }
 
+    let updatedList;
     if (editingIndex !== null) {
-      const updated = [...addresses];
-      updated[editingIndex] = newAddress;
-      setAddresses(updated);
+      updatedList = [...addresses];
+      updatedList[editingIndex] = { ...updatedList[editingIndex], ...newAddress };
+      setAddresses(updatedList);
       setEditingIndex(null);
       toast.success("Address updated", { style: { width: "260px" } });
     } else {
-      setAddresses((prev) => [...prev, newAddress]);
+      updatedList = [...addresses, newAddress];
+      setAddresses(updatedList);
       toast.success("Address added", { style: { width: "260px" } });
     }
 
     setNewAddress({ street: "", city: "", zip: "", label: "Home" });
+    await syncToBackend(updatedList, selectedIndex);
   };
 
   const handleEditAddress = (index) => {
@@ -55,9 +100,13 @@ const AddressPage = () => {
     setEditingIndex(index);
   };
 
-  const handleDeleteAddress = (index) => {
-    setAddresses(addresses.filter((_, i) => i !== index));
+  const handleDeleteAddress = async (index) => {
+    const updatedList = addresses.filter((_, i) => i !== index);
+    setAddresses(updatedList);
+    const newSelIdx = selectedIndex === index ? (updatedList.length ? 0 : null) : selectedIndex;
+    setSelectedIndex(newSelIdx);
     toast.info("Address removed", { style: { width: "260px" } });
+    await syncToBackend(updatedList, newSelIdx);
   };
 
   const handleSelect = (index) => {
@@ -71,6 +120,7 @@ const AddressPage = () => {
     }
     navigate("/payment");
   };
+
 
   return (
     <>

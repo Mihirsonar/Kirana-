@@ -1,48 +1,69 @@
-import React, { useState, useEffect } from "react";
-import { Link,useNavigate} from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
+import React, { useState, useEffect, useRef } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import { PiShoppingCartThin } from "react-icons/pi";
-import { IoPersonCircleOutline } from "react-icons/io5";
-import { LiaCartPlusSolid } from "react-icons/lia";
-import { toggleTheme } from "../redux/Slice/ThemeSlice";
+import { IoPersonCircleOutline, IoLocationOutline, IoChevronDownOutline } from "react-icons/io5";
 import SearchBar from "./Search";
 
 function Header() {
-  const dispatch = useDispatch();
-
   const navigate = useNavigate();
+  const dropdownRef = useRef(null);
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [selectedAddress, setSelectedAddress] = useState(null);
 
-  const darkMode = useSelector((state) => state.theme.darkmode);
   const cartItems = useSelector((state) => state.cart.cartItems || []);
   const cartCount = cartItems.length;
+  const BASE_URL = import.meta.env.VITE_APP_BACKEND_URL;
 
-useEffect(() => {
-  const token = localStorage.getItem("Token");
-  const rawUser = localStorage.getItem("User");
-
-  let user = {};
-
-  try {
-    user = JSON.parse(rawUser);
-  } catch {
-    user = { name: rawUser };
-  }
-
-  setIsLoggedIn(!!token);
-  if (user?.name) setUserName(user.name);
-}, []);
-
+  // ── Load auth + address ──────────────────────────────────────────────────
   useEffect(() => {
-    const handleClickOutside = () => setDropdownOpen(false);
-    if (dropdownOpen) {
-      window.addEventListener("click", handleClickOutside);
+    const token = localStorage.getItem("Token");
+    const rawUser = localStorage.getItem("User");
+    let user = {};
+    try { user = JSON.parse(rawUser); } catch { user = { name: rawUser }; }
+    setIsLoggedIn(!!token);
+    if (user?.name) setUserName(user.name);
+
+    // Load address from localStorage first (fast), then sync from backend
+    const savedAddr = localStorage.getItem("selectedAddress");
+    if (savedAddr) {
+      try { setSelectedAddress(JSON.parse(savedAddr)); } catch { }
     }
-    return () => window.removeEventListener("click", handleClickOutside);
+
+    if (token) {
+      fetch(`${BASE_URL}/api/auth/addresses`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+        .then((r) => r.json())
+        .then((data) => {
+          if (data.addresses?.length) {
+            // pick default or first
+            const def = data.defaultAddress
+              ? data.addresses.find((a) => String(a._id) === String(data.defaultAddress))
+              : data.addresses[0];
+            if (def) {
+              setSelectedAddress(def);
+              localStorage.setItem("selectedAddress", JSON.stringify(def));
+            }
+          }
+        })
+        .catch(() => { });
+    }
+  }, []);
+
+  // ── Close dropdown on outside click ─────────────────────────────────────
+  useEffect(() => {
+    const handler = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setDropdownOpen(false);
+      }
+    };
+    if (dropdownOpen) document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
   }, [dropdownOpen]);
 
   const navLinks = [
@@ -51,109 +72,205 @@ useEffect(() => {
     { name: "About", path: "/about" },
   ];
 
-  return (
-    <header className="sticky top-0 z-50 backdrop-blur-lg bg-white/80 dark:bg-gray-900/90 border-b border-gray-200 dark:border-gray-800 dark:text-white">
-      <div className="flex items-center justify-between px-6 py-3 max-w-7xl mx-auto">
-        <div className="flex items-center gap-6 w-full">
-          <Link
-            to="/"
-            className="flex items-center text-xl font-bold tracking-tight dark:text-white text-gray-900"
-          >
-            Kirana
-            <LiaCartPlusSolid className="ml-1 w-5 h-5" />
-          </Link>
+  const handleLogout = () => {
+    localStorage.removeItem("Token");
+    localStorage.removeItem("User");
+    localStorage.removeItem("selectedAddress");
+    setIsLoggedIn(false);
+    setDropdownOpen(false);
+    navigate("/login");
+  };
 
-          <div className="hidden md:block w-full max-w-md">
+  return (
+    <>
+      {/* ══ Main Header ═══════════════════════════════════════════════════ */}
+      <header className="sticky top-0 z-50 bg-white border-b border-gray-200/80 shadow-sm">
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+
+          {/* ── LEFT: Logo & Delivery Address ──────────────────────────── */}
+          <div className="flex items-center gap-4 lg:gap-6 shrink-0">
+            <Link
+              to="/"
+              className="text-2xl font-black tracking-tight text-gray-900 select-none flex items-center"
+            >
+              Kirana<span className="text-purple-600">+</span>
+            </Link>
+
+            {/* Deliver-to Address */}
+            <button
+              onClick={() => navigate(isLoggedIn ? "/address" : "/login")}
+              className="hidden md:flex flex-col items-start px-2 py-1 rounded-lg hover:bg-gray-50 transition border border-transparent hover:border-gray-200 text-left group"
+              title="Change Delivery Address"
+            >
+              <span className="flex items-center gap-1 text-emerald-600 font-bold text-xs leading-tight group-hover:text-emerald-700">
+                <IoLocationOutline className="w-3.5 h-3.5 shrink-0" />
+                {selectedAddress ? `Deliver to ${selectedAddress.label}` : "Deliver to"}
+                <IoChevronDownOutline className="w-3 h-3 text-emerald-600 shrink-0" />
+              </span>
+              <span className="text-[11px] text-gray-600 font-medium leading-tight max-w-[160px] lg:max-w-[200px] truncate mt-0.5">
+                {selectedAddress
+                  ? `${selectedAddress.street}, ${selectedAddress.city}`
+                  : "Select Address"}
+              </span>
+            </button>
+          </div>
+
+          {/* ── CENTER: Modern Search Bar ──────────────────────────────── */}
+          <div className="hidden md:flex flex-1 max-w-xl lg:max-w-2xl mx-4 lg:mx-8">
             <SearchBar />
           </div>
-        </div>
 
-        <div className="flex items-center gap-5">
-          <button
-            onClick={() => dispatch(toggleTheme())}
-            className="p-2 rounded-lg border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
-          >
-            {darkMode ? "🌞" : "🌙"}
-          </button>
+          {/* ── RIGHT: Nav Links + Account + Cart + Mobile Hamburger ───── */}
+          <div className="flex items-center gap-3 sm:gap-4 lg:gap-6 shrink-0">
+            {/* Desktop Nav Links */}
+            <nav className="hidden lg:flex items-center gap-6">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.name}
+                  to={link.path}
+                  className="text-sm font-medium text-gray-700 hover:text-purple-600 transition-colors"
+                >
+                  {link.name}
+                </Link>
+              ))}
+            </nav>
 
-          <Link to="/cart" className="relative">
-            <PiShoppingCartThin className="w-6 h-6" />
-            {cartCount > 0 && (
-              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold h-5 w-5 flex items-center justify-center rounded-full">
-                {cartCount}
-              </span>
-            )}
-          </Link>
+            {/* User Account / Login */}
+            {isLoggedIn ? (
+              <div className="relative shrink-0" ref={dropdownRef}>
+                <button
+                  onClick={() => setDropdownOpen(!dropdownOpen)}
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg hover:bg-gray-100 text-sm font-medium text-gray-800 transition"
+                >
+                  <IoPersonCircleOutline className="w-5 h-5 text-gray-600 shrink-0" />
+                  <span className="hidden sm:inline font-medium capitalize max-w-[100px] truncate">
+                    {userName.split(" ")[0]}
+                  </span>
+                  <IoChevronDownOutline className="w-3 h-3 text-gray-500 shrink-0" />
+                </button>
 
-          {isLoggedIn ? (
-            <div className="relative">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setDropdownOpen(!dropdownOpen);
-                }}
-                className="flex items-center gap-2 font-medium"
+                {dropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-48 rounded-xl shadow-xl bg-white border border-gray-100 py-1.5 z-50 animate-in fade-in zoom-in-95 duration-100">
+                    <Link
+                      to="/profile"
+                      onClick={() => setDropdownOpen(false)}
+                      className="block px-4 py-2 text-sm hover:bg-gray-50 text-gray-700 font-medium"
+                    >
+                      Profile
+                    </Link>
+                    <Link
+                      to="/address"
+                      onClick={() => setDropdownOpen(false)}
+                      className="block px-4 py-2 text-sm hover:bg-gray-50 text-gray-700 font-medium"
+                    >
+                      My Addresses
+                    </Link>
+                    <Link
+                      to="/myorders"
+                      onClick={() => setDropdownOpen(false)}
+                      className="block px-4 py-2 text-sm hover:bg-gray-50 text-gray-700 font-medium"
+                    >
+                      My Orders
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="w-full text-left px-4 py-2 text-sm hover:bg-red-50 text-red-600 font-medium border-t border-gray-100 mt-1"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Link
+                to="/login"
+                className="hidden sm:inline-flex px-4 py-1.5 rounded-lg bg-green-600 text-white text-sm font-semibold hover:bg-green-700 active:scale-95 transition-all shadow-sm"
               >
-                <IoPersonCircleOutline className="w-6 h-6" />
-                {userName.split(" ")[0]}
-              </button>
-
-              {dropdownOpen && (
-                <div className="absolute right-0 mt-2 w-44 rounded-lg shadow-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-                  <Link
-                    to="/profile"
-                    onClick={() => setDropdownOpen(false)}
-                    className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700"
-                  >
-                    Profile
-                  </Link>
-                  <button
-                    onClick={() => {
-                      localStorage.removeItem("Token");
-                      localStorage.removeItem("User");
-                      setIsLoggedIn(false);
-                      setDropdownOpen(false);
-                      navigate("/login");
-                    }}
-                    className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700"
-                  >
-                    Logout
-                  </button>
-                </div>
-              )}
-            </div>
-          ) : (
-            <Link to="/login">
-              <button className="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition">
                 Login
-              </button>
+              </Link>
+            )}
+
+            {/* Cart Button */}
+            <Link
+              to="/cart"
+              className="relative p-2.5 rounded-full bg-gray-100 hover:bg-gray-200/80 border border-gray-200 text-gray-700 transition shrink-0 flex items-center justify-center"
+              aria-label="Shopping Cart"
+            >
+              <PiShoppingCartThin className="w-5 h-5" />
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-indigo-600 text-white text-[10px] font-bold h-4 min-w-[16px] px-1 flex items-center justify-center rounded-full shadow-sm">
+                  {cartCount}
+                </span>
+              )}
             </Link>
-          )}
 
-          <button
-            onClick={() => setMobileOpen(!mobileOpen)}
-            className="md:hidden text-2xl"
-          >
-            {mobileOpen ? "✕" : "☰"}
-          </button>
+            {/* Mobile Hamburger */}
+            <button
+              onClick={() => setMobileOpen(!mobileOpen)}
+              className="md:hidden p-2 rounded-lg text-gray-700 hover:bg-gray-100 transition"
+              aria-label="Menu"
+            >
+              {mobileOpen ? (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              ) : (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              )}
+            </button>
+          </div>
         </div>
-      </div>
+      </header>
 
+      {/* ══ Mobile Dropdown ═══════════════════════════════════════════════ */}
       <div
-        className={`md:hidden px-6 pb-4 transition-all duration-300 ${
-          mobileOpen ? "block" : "hidden"
+        className={`md:hidden bg-white border-b border-gray-200 overflow-hidden transition-all duration-300 ${
+          mobileOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
         }`}
       >
-        <SearchBar />
-        <div className="flex flex-col gap-4 mt-4 font-medium">
-          {navLinks.map((link) => (
-            <Link key={link.name} to={link.path}>
-              {link.name}
-            </Link>
-          ))}
+        <div className="px-4 py-3 flex flex-col gap-3">
+          <SearchBar />
+          {/* Mobile address */}
+          <button
+            onClick={() => {
+              navigate(isLoggedIn ? "/address" : "/login");
+              setMobileOpen(false);
+            }}
+            className="flex items-center gap-1.5 text-emerald-600 text-sm font-semibold text-left p-2 rounded-lg bg-emerald-50/60"
+          >
+            <IoLocationOutline className="w-4 h-4 shrink-0" />
+            <span className="truncate">
+              {selectedAddress
+                ? `${selectedAddress.label}: ${selectedAddress.street}, ${selectedAddress.city}`
+                : "Set delivery address"}
+            </span>
+          </button>
+          <div className="flex flex-col gap-1">
+            {navLinks.map((link) => (
+              <Link
+                key={link.name}
+                to={link.path}
+                onClick={() => setMobileOpen(false)}
+                className="px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"
+              >
+                {link.name}
+              </Link>
+            ))}
+            {!isLoggedIn && (
+              <Link
+                to="/login"
+                onClick={() => setMobileOpen(false)}
+                className="mt-1 px-3 py-2 rounded-lg text-sm font-semibold text-white bg-green-600 hover:bg-green-700 text-center"
+              >
+                Login
+              </Link>
+            )}
+          </div>
         </div>
       </div>
-    </header>
+    </>
   );
 }
 

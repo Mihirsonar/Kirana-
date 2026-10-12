@@ -36,7 +36,6 @@ function Routing() {
     "/register",
     "/cart",
     "/orders",
-    "/address",
     "/payment",
     "/order-success",
     "/admin",
