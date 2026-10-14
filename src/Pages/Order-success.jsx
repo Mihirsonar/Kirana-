@@ -51,7 +51,7 @@ function OrderSuccess() {
                 btn.textContent = "Enabling...";
                 try {
                   const token = localStorage.getItem("Token");
-                  const { subscribeUserToPush } = await import("../utils/pushNotifications");
+                  const { subscribeUserToPush } = await import("../Utils/pushNotifications");
                   await subscribeUserToPush(token);
                   btn.textContent = "✓ Alerts Enabled!";
                   btn.className = "text-xs font-semibold px-3 py-1.5 rounded-lg bg-green-600 text-white";

@@ -7,7 +7,7 @@ import {
   subscribeUserToPush,
   unsubscribeUserFromPush,
   sendTestNotification,
-} from '../../utils/pushNotifications';
+} from '../../Utils/pushNotifications';
 
 export default function PushNotificationToggle() {
   const [supported, setSupported] = useState(false);
