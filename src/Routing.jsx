@@ -25,10 +25,15 @@ import PaymentPage from "./Pages/Payment";
 import OrderSuccess from "./Pages/Order-success";
 import MyOrders from "./Pages/Myorders";
 
-// Lazy Loaded Admin Pages
-const AllOrdersLazy = lazy(() =>
-  import("./Pages/Admin/AllOrders")
-);
+// Admin Pages
+import AdminDashboard from "./Pages/Admin/Dashboard";
+import AdminProducts from "./Pages/Admin/Products";
+import StockAndPrices from "./Pages/Admin/StockAndPrices";
+import AdminCategories from "./Pages/Admin/Categories";
+import AdminCustomers from "./Pages/Admin/Customers";
+import StoreSettings from "./Pages/Admin/StoreSettings";
+import GenericAdminSection from "./Pages/Admin/GenericAdminSection";
+import AllOrders from "./Pages/Admin/AllOrders";
 
 function Routing() {
   const location = useLocation();
@@ -127,25 +132,160 @@ function Routing() {
         />
 
         {/* ADMIN ROUTES */}
-
+        <Route
+          path="/admin"
+          element={
+            <AdminRoute>
+              <AdminDashboard />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/dashboard"
+          element={
+            <AdminRoute>
+              <AdminDashboard />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/orders"
+          element={
+            <AdminRoute>
+              <AllOrders />
+            </AdminRoute>
+          }
+        />
         <Route
           path="/admin/AllOrders"
           element={
             <AdminRoute>
-              <Suspense
-                fallback={
-                  <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
-                    <div className="text-center">
-                      <div className="w-12 h-12 border-4 border-green-500 border-t-transparent rounded-full animate-spin mx-auto" />
-                      <p className="mt-4 text-slate-600 dark:text-slate-400">
-                        Loading Dashboard...
-                      </p>
-                    </div>
-                  </div>
-                }
-              >
-                <AllOrdersLazy />
-              </Suspense>
+              <AllOrders />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/products"
+          element={
+            <AdminRoute>
+              <AdminProducts />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/categories"
+          element={
+            <AdminRoute>
+              <AdminCategories />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/stock"
+          element={
+            <AdminRoute>
+              <StockAndPrices />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/customers"
+          element={
+            <AdminRoute>
+              <AdminCustomers />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/settings"
+          element={
+            <AdminRoute>
+              <StoreSettings />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/charges"
+          element={
+            <AdminRoute>
+              <StoreSettings />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/offers"
+          element={
+            <AdminRoute>
+              <GenericAdminSection
+                title="% Offers"
+                subtitle="Active promotional percentage discounts and grocery deals"
+              />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/coupons"
+          element={
+            <AdminRoute>
+              <GenericAdminSection
+                title="Coupons"
+                subtitle="Manage checkout discount coupon codes and vouchers"
+              />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/banners"
+          element={
+            <AdminRoute>
+              <GenericAdminSection
+                title="Banners"
+                subtitle="Promotional home carousels and store advertisement banners"
+              />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/team"
+          element={
+            <AdminRoute>
+              <GenericAdminSection
+                title="Team & Delivery Staff"
+                subtitle="Store operators, cashiers, and assigned delivery riders"
+              />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/cash"
+          element={
+            <AdminRoute>
+              <GenericAdminSection
+                title="Cash Counter"
+                subtitle="Daily cash reconciliation and physical register balances"
+              />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/reports"
+          element={
+            <AdminRoute>
+              <GenericAdminSection
+                title="Reports & Analytics"
+                subtitle="End-of-day sales reports, GST invoices, and AOV trends"
+              />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/audit-log"
+          element={
+            <AdminRoute>
+              <GenericAdminSection
+                title="Audit Log"
+                subtitle="Track system changes, price edits, and admin events"
+              />
             </AdminRoute>
           }
         />
