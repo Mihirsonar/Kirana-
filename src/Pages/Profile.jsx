@@ -77,6 +77,19 @@ function Profile() {
           </div>
           <span>›</span>
         </div>
+
+        <div
+          onClick={() => navigate("/settings")}
+          className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+        >
+          <div className="flex items-center gap-3">
+            <span className="text-base">⚙️</span>
+            <span className="font-medium text-gray-800 dark:text-gray-200">
+              Settings & Theme
+            </span>
+          </div>
+          <span>›</span>
+        </div>
       </div>
 
       {/* ADDRESS LIST */}

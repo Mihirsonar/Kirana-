@@ -8,6 +8,8 @@ import Contact from "./Pages/Contact";
 import LoginPage from "./Pages/Login";
 import SignInPage from "./Pages/Register";
 import Profile from "./Pages/Profile";
+import ProductsPage from "./Pages/ProductsPage";
+import Settings from "./Pages/Settings";
 
 // Components
 import Header from "./Components/Header";
@@ -39,6 +41,8 @@ function Routing() {
     "/payment",
     "/order-success",
     "/admin",
+    "/address",
+    "/settings"
   ];
 
   const shouldHideHeaderFooter =
@@ -56,9 +60,13 @@ function Routing() {
 
         <Route path="/" element={<Home />} />
 
+        <Route path="/products" element={<ProductsPage />} />
+
         <Route path="/about" element={<About />} />
 
         <Route path="/contact" element={<Contact />} />
+
+        <Route path="/settings" element={<Settings />} />
 
         <Route path="/login" element={<LoginPage />} />
 
