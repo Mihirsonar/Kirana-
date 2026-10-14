@@ -16,9 +16,16 @@ const ProductPage = () => {
 
   useEffect(() => {
     fetch(`${import.meta.env.VITE_APP_BACKEND_URL}/api/products`)
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error("Network response was not ok");
+        return res.json();
+      })
       .then((data) => {
         dispatch(setProducts(data));
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.warn("Unable to fetch fresh products (may be offline):", err);
         setLoading(false);
       });
   }, [dispatch]);

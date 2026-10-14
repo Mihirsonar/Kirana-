@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Package, MapPin, LogOut } from "lucide-react";
+import PushNotificationToggle from "../Components/PWA/PushNotificationToggle";
 
 function Profile() {
   const navigate = useNavigate();
@@ -13,9 +14,23 @@ function Profile() {
     user = { name: rawUser };
   }
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     localStorage.removeItem("Token");
     localStorage.removeItem("User");
+    localStorage.removeItem("selectedAddress");
+    // Clear API caches to prevent account/role data leakage
+    if ("caches" in window) {
+      try {
+        const cacheKeys = await caches.keys();
+        await Promise.all(
+          cacheKeys
+            .filter((k) => k.includes("api") || k.includes("user"))
+            .map((k) => caches.delete(k))
+        );
+      } catch (e) {
+        console.warn("Cache cleanup error:", e);
+      }
+    }
     navigate("/login");
   };
 
@@ -95,6 +110,9 @@ function Profile() {
           </div>
         )}
       </div>
+
+      {/* PWA PUSH NOTIFICATIONS */}
+      <PushNotificationToggle />
 
       {/* LOGOUT */}
       <button

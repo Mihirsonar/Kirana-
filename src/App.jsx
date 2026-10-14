@@ -3,12 +3,18 @@ import Routing from "./Routing";
 import { useSelector } from "react-redux";
 import { useEffect } from "react";
 import ThemeHandler from "./Components/ThemeHandler";
-function App() {
+import OfflineBanner from "./Components/PWA/OfflineBanner";
+import InstallPrompt from "./Components/PWA/InstallPrompt";
+import UpdatePrompt from "./Components/PWA/UpdatePrompt";
 
+function App() {
   return (
     <BrowserRouter>
-    <ThemeHandler />
+      <ThemeHandler />
+      <OfflineBanner />
       <Routing />
+      <InstallPrompt />
+      <UpdatePrompt />
     </BrowserRouter>
   );
 }

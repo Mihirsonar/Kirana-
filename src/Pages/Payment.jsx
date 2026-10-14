@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import { clearCart } from "../redux/Slice/CartSlice";
 import CartHeader from "../Components/CartHeader";
+import { useOnlineStatus } from "../Components/PWA/useOnlineStatus";
 
 const loadRazorpayScript = () => {
   return new Promise((resolve) => {
@@ -29,6 +30,7 @@ const PaymentPage = () => {
   const [paymentMethod, setPaymentMethod] = useState("Razorpay");
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const { isOnline } = useOnlineStatus();
 
   useEffect(() => {
     const saved = localStorage.getItem("selectedAddress");
@@ -194,6 +196,10 @@ const PaymentPage = () => {
   };
 
   const handlePayment = async () => {
+    if (!isOnline) {
+      toast.error("You are currently offline. Please reconnect to internet to complete your order.");
+      return;
+    }
     if (!selectedAddress) return toast.error("Please select a delivery address first 🚚");
     if (!cartItems.length) return toast.error("Your cart is empty 🛒");
 
@@ -426,10 +432,12 @@ const PaymentPage = () => {
 
               <button
                 onClick={handlePayment}
-                disabled={!cartItems.length || isProcessing}
+                disabled={!cartItems.length || isProcessing || !isOnline}
                 className="w-full mt-6 py-3.5 bg-green-600 hover:bg-green-700 active:scale-[0.99] text-white rounded-xl font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-green-600/20"
               >
-                {isProcessing ? (
+                {!isOnline ? (
+                  "Offline — Reconnect to Place Order"
+                ) : isProcessing ? (
                   <>
                     <svg
                       className="animate-spin h-5 w-5 text-white"
