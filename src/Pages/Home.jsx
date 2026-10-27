@@ -10,7 +10,7 @@ function Home() {
     <div className="min-h-screen bg-white dark:bg-gray-900 text-black dark:text-white">
 
 <Carousel/> 
-<Products/> 
+<Products category="All" />
     </div>
 )
 }

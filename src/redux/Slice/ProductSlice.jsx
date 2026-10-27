@@ -12,18 +12,31 @@ const productSlice = createSlice({
   initialState,
   reducers: {
     setProducts: (state, action) => {
-      state.products = action.payload;
-      state.filteredProducts = action.payload; // Initialize with all products
+      state.products = action.payload || [];
+      const query = (state.searchQuery || '').trim().toLowerCase();
+      state.filteredProducts = query
+        ? state.products.filter(
+            (p) =>
+              p.name?.toLowerCase().includes(query) ||
+              p.description?.toLowerCase().includes(query)
+          )
+        : state.products;
     },
     setSearchQuery: (state, action) => {
-      state.searchQuery = action.payload;
-      // Filter products based on the search query
-      state.filteredProducts = state.products.filter((product) =>
-        product.name.toLowerCase().includes(action.payload.toLowerCase())
-      );
+      state.searchQuery = action.payload || '';
+      const query = state.searchQuery.trim().toLowerCase();
+      state.filteredProducts = query
+        ? state.products.filter(
+            (p) =>
+              p.name?.toLowerCase().includes(query) ||
+              p.description?.toLowerCase().includes(query)
+          )
+        : state.products;
     },
   },
 });
 
 export const { setProducts, setSearchQuery } = productSlice.actions;
 export default productSlice.reducer;
+
+

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { setProducts } from "../redux/Slice/ProductSlice";
 import {
@@ -6,13 +6,16 @@ import {
   incrementQuantity,
   decrementQuantity,
 } from "../redux/Slice/CartSlice";
-import { ToastContainer, toast } from "react-toastify";
+import { ToastContainer } from "react-toastify";
+import { isCategoryMatch } from "../Utils/categoryMatcher";
 
-const ProductPage = () => {
+const ProductPage = ({ category = "All", title, hideTitle = false, onClearFilter }) => {
   const dispatch = useDispatch();
-  const { filteredProducts } = useSelector((state) => state.product);
+  const { products, searchQuery } = useSelector((state) => state.product);
   const cartItems = useSelector((state) => state.cart.cartItems || []);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!products || products.length === 0);
+
+  const activeCategory = category || "All";
 
   useEffect(() => {
     fetch(`${import.meta.env.VITE_APP_BACKEND_URL}/api/products`)
@@ -30,22 +33,48 @@ const ProductPage = () => {
       });
   }, [dispatch]);
 
+  const displayedProducts = useMemo(() => {
+    const list = products && products.length > 0 ? products : [];
+    const query = (searchQuery || "").trim().toLowerCase();
+
+    return list.filter((product) => {
+      const matchesSearch =
+        !query ||
+        (product.name && product.name.toLowerCase().includes(query)) ||
+        (product.description && product.description.toLowerCase().includes(query));
+
+      const matchesCat = isCategoryMatch(product.category, activeCategory);
+
+      return matchesSearch && matchesCat;
+    });
+  }, [products, searchQuery, activeCategory]);
+
   const addToCart = (product) => {
     dispatch(add(product));
-    // toast.success("Added to cart 🛒", {
-    //   position: "bottom-left",
-    //   autoClose: 1500,
-    //   theme: "colored",
-    // });
   };
+
+  const displayTitle =
+    title ||
+    (activeCategory && activeCategory !== "All"
+      ? `${activeCategory} Products`
+      : "Trending Products");
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
       <ToastContainer />
 
-      <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">
-        Trending Products
-      </h2>
+      {!hideTitle && (
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+            <span>{displayTitle}</span>
+            {!loading && displayedProducts.length > 0 && (
+              <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                ({displayedProducts.length})
+              </span>
+            )}
+          </h2>
+        </div>
+      )}
 
       {/* SKELETON */}
       {loading ? (
@@ -62,9 +91,31 @@ const ProductPage = () => {
             </div>
           ))}
         </div>
+      ) : displayedProducts.length === 0 ? (
+        <div className="text-center py-16 bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-8 shadow-xs">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-emerald-50 dark:bg-emerald-950/60 flex items-center justify-center text-3xl">
+            🧺
+          </div>
+          <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
+            No products found
+          </h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto mb-5">
+            {searchQuery
+              ? `No products matching "${searchQuery}" in ${activeCategory}.`
+              : `There are currently no products available under ${activeCategory}.`}
+          </p>
+          {onClearFilter && (
+            <button
+              onClick={onClearFilter}
+              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl transition shadow-sm"
+            >
+              View All Products
+            </button>
+          )}
+        </div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5">
-          {filteredProducts.map((product) => {
+          {displayedProducts.map((product) => {
             const cartItem = cartItems.find(
               (item) => item._id === product._id
             );
@@ -85,7 +136,7 @@ const ProductPage = () => {
 
                 {/* INFO */}
                 <p className="text-sm font-semibold text-gray-800 dark:text-white line-clamp-2 mb-1">
-                  {product.description}
+                  {product.description || product.name}
                 </p>
 
                 <p className="text-xs text-gray-500 mb-2">
@@ -138,4 +189,4 @@ const ProductPage = () => {
   );
 };
 
-export default ProductPage;
+export default ProductPage;

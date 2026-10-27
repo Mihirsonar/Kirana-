@@ -1,7 +1,5 @@
 import { BrowserRouter } from "react-router-dom";
 import Routing from "./Routing";
-import { useSelector } from "react-redux";
-import { useEffect } from "react";
 import ThemeHandler from "./Components/ThemeHandler";
 import OfflineBanner from "./Components/PWA/OfflineBanner";
 import InstallPrompt from "./Components/PWA/InstallPrompt";

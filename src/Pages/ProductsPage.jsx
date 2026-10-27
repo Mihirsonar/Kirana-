@@ -1,19 +1,65 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
+import { useSelector } from "react-redux";
+import { useSearchParams } from "react-router-dom";
 import ProductPage from "../Components/Products";
 import { Sparkles, Filter } from "lucide-react";
+import { isCategoryMatch } from "../Utils/categoryMatcher";
 
 export default function ProductsPage() {
-  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const catParam = searchParams.get("category");
 
-  const categories = [
+  const [selectedCategory, setSelectedCategory] = useState(catParam || "All");
+  const products = useSelector((state) => state.product.products || []);
+
+  const predefinedCategories = [
     "All",
+    "Dairy",
+    "Grocery",
+    "Snacks",
+    "Beverages",
+    "Personal Care",
     "Vegetables",
     "Fruits",
-    "Dairy & Bakery",
-    "Snacks & Munchies",
-    "Beverages",
-    "Staples & Grains",
   ];
+
+  const categories = useMemo(() => {
+    const list = [...predefinedCategories];
+    products.forEach((p) => {
+      if (p.category) {
+        const matchesPredefined = list.some((cat) => isCategoryMatch(p.category, cat));
+        if (!matchesPredefined && !list.includes(p.category)) {
+          list.push(p.category);
+        }
+      }
+    });
+    return list;
+  }, [products]);
+
+  // Keep in sync with URL parameter if it changes
+  useEffect(() => {
+    if (catParam) {
+      setSelectedCategory(catParam);
+    }
+  }, [catParam]);
+
+  const handleSelectCategory = (cat) => {
+    setSelectedCategory(cat);
+    if (cat === "All") {
+      const nextParams = new URLSearchParams(searchParams);
+      nextParams.delete("category");
+      setSearchParams(nextParams);
+    } else {
+      const nextParams = new URLSearchParams(searchParams);
+      nextParams.set("category", cat);
+      setSearchParams(nextParams);
+    }
+  };
+
+  const getCategoryCount = (cat) => {
+    if (cat === "All") return products.length;
+    return products.filter((p) => isCategoryMatch(p.category, cat)).length;
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 transition-colors duration-200">
@@ -42,26 +88,46 @@ export default function ProductsPage() {
             <Filter className="w-3.5 h-3.5" />
             <span>Category:</span>
           </div>
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold shrink-0 transition-all ${
-                selectedCategory === cat
-                  ? "bg-purple-600 text-white shadow-sm"
-                  : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
+          {categories.map((cat) => {
+            const isSelected = isCategoryMatch(selectedCategory, cat) && isCategoryMatch(cat, selectedCategory);
+            const count = getCategoryCount(cat);
+
+            return (
+              <button
+                key={cat}
+                onClick={() => handleSelectCategory(cat)}
+                className={`px-3.5 py-1.5 rounded-full text-xs font-semibold shrink-0 transition-all flex items-center gap-1.5 ${
+                  isSelected
+                    ? "bg-purple-600 text-white shadow-sm ring-2 ring-purple-400/30"
+                    : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+                }`}
+              >
+                <span>{cat}</span>
+                {products.length > 0 && (
+                  <span
+                    className={`px-1.5 py-0.2 text-[10px] rounded-full font-bold ${
+                      isSelected
+                        ? "bg-white/20 text-white"
+                        : "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400"
+                    }`}
+                  >
+                    {count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
 
       {/* Products Grid */}
       <main className="py-4">
-        <ProductPage />
+        <ProductPage
+          category={selectedCategory}
+          onClearFilter={() => handleSelectCategory("All")}
+        />
       </main>
     </div>
   );
 }
+
