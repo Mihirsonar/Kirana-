@@ -11,24 +11,20 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      # Step 1:  code runner 
       - name: Code Checkout
         uses: actions/checkout@v4
 
-      # Step 2: Node install
       - name: Setup Node 18
         uses: actions/setup-node@v4
         with:
           node-version: 18
           cache: 'npm'
 
-      # Step 3: Package install
       - name: Install Dependencies
-        run: npm ci
+        run: npm install
 
-      # Step 4: Lint check -  eslint.config.js use 
       - name: Lint Check
         run: npm run lint --if-present
 
-      # Step 5: Build check 
+      - name: Build Check
         run: npm run build
