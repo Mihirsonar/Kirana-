@@ -1,0 +1,34 @@
+name: Frontend CI - Kirana+ Store
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+      # Step 1:  code runner 
+      - name: Code Checkout
+        uses: actions/checkout@v4
+
+      # Step 2: Node install
+      - name: Setup Node 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      # Step 3: Package install
+      - name: Install Dependencies
+        run: npm ci
+
+      # Step 4: Lint check -  eslint.config.js use 
+      - name: Lint Check
+        run: npm run lint --if-present
+
+      # Step 5: Build check 
+        run: npm run build
