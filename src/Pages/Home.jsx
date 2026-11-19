@@ -9,10 +9,10 @@ function Home() {
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900 text-black dark:text-white">
 
-<Carousel/> 
-<Products category="All" />
+      <Carousel />
+      <Products />
     </div>
-)
+  )
 }
 
 export default Home
