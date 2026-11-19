@@ -1,64 +1,62 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { useSelector } from "react-redux";
 import { useSearchParams } from "react-router-dom";
 import ProductPage from "../Components/Products";
 import { Sparkles, Filter } from "lucide-react";
-import { isCategoryMatch } from "../Utils/categoryMatcher";
+
+const PREDEFINED_CATEGORIES = [
+  "All",
+  "Dairy",
+  "Grocery",
+  "Snacks",
+  "Beverages",
+  "Personal Care",
+  "Vegetables",
+  "Fruits",
+];
 
 export default function ProductsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const catParam = searchParams.get("category");
 
-  const [selectedCategory, setSelectedCategory] = useState(catParam || "All");
-  const products = useSelector((state) => state.product.products || []);
+  const catParam  = searchParams.get("category") || "All";
+  const pageParam = parseInt(searchParams.get("page") || "1", 10);
 
-  const predefinedCategories = [
-    "All",
-    "Dairy",
-    "Grocery",
-    "Snacks",
-    "Beverages",
-    "Personal Care",
-    "Vegetables",
-    "Fruits",
-  ];
+  const [selectedCategory, setSelectedCategory] = useState(catParam);
+  const [currentPage, setCurrentPage] = useState(pageParam);
 
-  const categories = useMemo(() => {
-    const list = [...predefinedCategories];
-    products.forEach((p) => {
-      if (p.category) {
-        const matchesPredefined = list.some((cat) => isCategoryMatch(p.category, cat));
-        if (!matchesPredefined && !list.includes(p.category)) {
-          list.push(p.category);
-        }
-      }
-    });
-    return list;
-  }, [products]);
-
-  // Keep in sync with URL parameter if it changes
+  // Sync state when URL changes (e.g. browser back/forward)
   useEffect(() => {
-    if (catParam) {
-      setSelectedCategory(catParam);
-    }
+    setSelectedCategory(catParam);
   }, [catParam]);
+
+  useEffect(() => {
+    setCurrentPage(pageParam);
+  }, [pageParam]);
+
+  // Push both category + page into the URL
+  const updateParams = (cat, page) => {
+    const next = new URLSearchParams(searchParams);
+    if (cat === "All") {
+      next.delete("category");
+    } else {
+      next.set("category", cat);
+    }
+    if (page <= 1) {
+      next.delete("page");
+    } else {
+      next.set("page", page);
+    }
+    setSearchParams(next);
+  };
 
   const handleSelectCategory = (cat) => {
     setSelectedCategory(cat);
-    if (cat === "All") {
-      const nextParams = new URLSearchParams(searchParams);
-      nextParams.delete("category");
-      setSearchParams(nextParams);
-    } else {
-      const nextParams = new URLSearchParams(searchParams);
-      nextParams.set("category", cat);
-      setSearchParams(nextParams);
-    }
+    setCurrentPage(1);
+    updateParams(cat, 1);
   };
 
-  const getCategoryCount = (cat) => {
-    if (cat === "All") return products.length;
-    return products.filter((p) => isCategoryMatch(p.category, cat)).length;
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+    updateParams(selectedCategory, page);
   };
 
   return (
@@ -88,32 +86,19 @@ export default function ProductsPage() {
             <Filter className="w-3.5 h-3.5" />
             <span>Category:</span>
           </div>
-          {categories.map((cat) => {
-            const isSelected = isCategoryMatch(selectedCategory, cat) && isCategoryMatch(cat, selectedCategory);
-            const count = getCategoryCount(cat);
-
+          {PREDEFINED_CATEGORIES.map((cat) => {
+            const isSelected = selectedCategory === cat;
             return (
               <button
                 key={cat}
                 onClick={() => handleSelectCategory(cat)}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-semibold shrink-0 transition-all flex items-center gap-1.5 ${
+                className={`px-3.5 py-1.5 rounded-full text-xs font-semibold shrink-0 transition-all ${
                   isSelected
                     ? "bg-purple-600 text-white shadow-sm ring-2 ring-purple-400/30"
                     : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
                 }`}
               >
-                <span>{cat}</span>
-                {products.length > 0 && (
-                  <span
-                    className={`px-1.5 py-0.2 text-[10px] rounded-full font-bold ${
-                      isSelected
-                        ? "bg-white/20 text-white"
-                        : "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400"
-                    }`}
-                  >
-                    {count}
-                  </span>
-                )}
+                {cat}
               </button>
             );
           })}
@@ -124,6 +109,8 @@ export default function ProductsPage() {
       <main className="py-4">
         <ProductPage
           category={selectedCategory}
+          page={currentPage}
+          onPageChange={handlePageChange}
           onClearFilter={() => handleSelectCategory("All")}
         />
       </main>
